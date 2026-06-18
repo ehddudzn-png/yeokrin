@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c10">
+<title>역린 · 사건 #003</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Gowun+Batang:wght@400;700&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+  /* ── 트릭 유형은 코드 어디에도 적지 않는다. 사건명·부제는 중립. ── */
+  :root{
+    --bg:#0a0c10; --bg2:#0d1016; --panel:#14181f; --panel2:#1a1f28;
+    --line:#272d38; --line2:#333b48;
+    --txt:#c9cdd4; --muted:#7b828f; --dim:#565d6a;
+    --amber:#c9a227; --amber-soft:#a98c2e;
+    --blood:#9b3b3b; --blood-soft:#74302f;
+    --teal:#5a8a8c;
+    --good:#5fa974; --bad:#b9544f;
+    --rain:rgba(150,178,214,.5);
+    --shadow:0 10px 30px rgba(0,0,0,.55);
+    --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%;}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:15px; line-height:1.65; letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* 모바일 세로 프레임 */
+  #app{
+    position:relative; max-width:480px; min-height:100vh; min-height:100dvh;
+    margin:0 auto; background:linear-gradient(180deg,#0b0e13,#080a0e 60%,#0a0c10);
+    box-shadow:0 0 60px rgba(0,0,0,.6);
+    overflow:hidden;
+  }
+  /* 비 레이어 */
+  #rain{position:fixed; inset:0; max-width:480px; margin:0 auto; pointer-events:none; z-index:1; opacity:.45;}
+  .screen{position:relative; z-index:2; min-height:100vh; min-height:100dvh; display:none; flex-direction:column;}
+  .screen.active{display:flex; animation:fade .5s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+
+  /* 헤더 */
+  header{
+    padding:calc(18px + env(safe-area-inset-top)) 20px 12px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(20,24,31,.9),rgba(13,16,22,.4));
+    backdrop-filter:blur(2px);
+  }
+  .case-tag{font-size:11px; letter-spacing:.32em; color:var(--amber-soft); text-transform:uppercase;}
+  .case-title{font-family:"Gowun Batang",serif; font-size:21px; font-weight:700; margin-top:3px; letter-spacing:.03em;}
+  .scene-sub{font-size:12px; color:var(--muted); margin-top:4px;}
+  .progress{display:flex; gap:6px; margin-top:12px;}
+  .pdot{flex:1; height:3px; border-radius:2px; background:var(--line2);}
+  .pdot.on{background:var(--amber);}
+
+  .body{flex:1; padding:18px 20px 26px; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .narr{color:var(--muted); font-size:13.5px; line-height:1.7; margin:0 0 16px;}
+  .narr em{color:var(--txt); font-style:normal;}
+
+  /* 메뉴 */
+  #menu{justify-content:center; align-items:center; text-align:center; padding:40px 26px calc(40px + env(safe-area-inset-bottom));}
+  #menu .logo{margin-bottom:6px;}
+  #menu .m-tag{font-size:12px; letter-spacing:.42em; color:var(--amber-soft); text-transform:uppercase;}
+  #menu h1{font-family:"Gowun Batang",serif; font-size:50px; margin:6px 0 2px; font-weight:700; letter-spacing:.2em; padding-left:.2em;}
+  #menu .m-line{width:54px; height:2px; background:var(--blood); margin:14px auto 12px; opacity:.7;}
+  #menu .m-case{font-size:14px; letter-spacing:.22em; color:#cdd1d8; margin-bottom:16px;}
+  #menu .blurb{color:var(--muted); font-size:13.5px; max-width:300px; line-height:1.8; margin-bottom:34px;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border:1px solid var(--line2); background:var(--panel); color:var(--txt);
+    padding:14px 22px; border-radius:11px; font-size:15px; font-weight:600;
+    cursor:pointer; transition:.18s; width:100%; min-height:48px;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.primary{background:linear-gradient(180deg,#1d2230,#161a23); border-color:var(--amber-soft); color:#e8d9a8;}
+  .btn.primary:disabled{opacity:.4; border-color:var(--line); color:var(--muted); cursor:not-allowed;}
+  .btn.ghost{background:transparent;}
+
+  /* 현장 SVG + 핫스팟 */
+  .scene-wrap{position:relative; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); margin-bottom:6px; background:#070a0e;}
+  .scene-wrap .scenebg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;}
+  .scene-wrap svg{position:relative; z-index:1;}
+  .scene-wrap.has-bg svg .bgfill,
+  .scene-wrap.has-bg svg .scene-prop{display:none;}
+  .scene-wrap svg{display:block; width:100%; height:auto;}
+  .hint-tap{font-size:11.5px; color:var(--dim); text-align:center; margin:10px 0 16px; letter-spacing:.03em;}
+  .hotspot{cursor:pointer;}
+  .hotspot circle.hit{fill:rgba(201,162,39,.0);}
+  .hotspot .ring{fill:none; stroke:var(--amber); stroke-width:1.5; opacity:.85; animation:pulse 2s ease-in-out infinite;}
+  .hotspot.done .ring{stroke:var(--good); animation:none; opacity:.55;}
+  .hotspot.done .dot{fill:var(--good);}
+  .hotspot .dot{fill:var(--amber);}
+  @keyframes pulse{0%,100%{transform:scale(1); opacity:.85;} 50%{transform:scale(1.45); opacity:.15;}}
+  .hotspot .ring{transform-origin:center; transform-box:fill-box;}
+
+  /* 카드/리스트 */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:11px;}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:13px; cursor:pointer; transition:.16s; position:relative; overflow:hidden;
+  }
+  .card:active{transform:scale(.985);}
+  .card.done{border-color:var(--good);}
+  .card .ic{height:64px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;}
+  .card .ic svg{width:54px; height:54px;}
+  .card .nm{font-size:13px; font-weight:600;}
+  .card .st{font-size:11px; color:var(--dim); margin-top:2px;}
+  .card.done .st{color:var(--good);}
+  .checkmark{position:absolute; top:8px; right:9px; font-size:12px; color:var(--good); opacity:0;}
+  .card.done .checkmark{opacity:1;}
+
+  /* 인물/진술 */
+  .person{display:flex; gap:13px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-bottom:12px;}
+  .person.clk{cursor:pointer;}
+  .person.clk:active{transform:scale(.99);}
+  .person .ava{width:54px; height:54px; border-radius:50%; overflow:hidden; flex:none; border:1px solid var(--line2); background:#0c0f14;}
+  .person .ava svg{width:100%; height:100%; display:block;}
+  .person .nm{font-weight:700; font-size:15.5px;}
+  .person .rl{font-size:12px; color:var(--muted);}
+  .person .badge{margin-left:auto; font-size:11px; color:var(--dim); text-align:right; line-height:1.4;}
+  .person .badge.ok{color:var(--good);}
+  .sus-block{margin-bottom:18px;}
+  .stmt{
+    border:1px solid var(--line); border-radius:11px; margin-bottom:10px; overflow:hidden;
+    background:var(--bg2); transition:.16s;
+  }
+  .stmt .q{padding:13px 15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; gap:10px; min-height:46px;}
+  .stmt .q .lbl{font-size:13.5px; color:var(--txt);}
+  .stmt .q .chev{color:var(--muted); transition:.2s; flex:none;}
+  .stmt.open .q .chev{transform:rotate(90deg); color:var(--amber);}
+  .stmt .a{max-height:0; overflow:hidden; transition:max-height .28s ease; }
+  .stmt .a-in{padding:0 15px 14px; font-size:14px; color:var(--txt); line-height:1.7;}
+  .stmt .a-in .said{color:#d8d2bd; font-style:italic;}
+  .stmt.read .q .lbl::before{content:"●"; color:var(--good); font-size:8px; vertical-align:middle; margin-right:7px;}
+  .stmt:not(.read) .q .lbl::before{content:"○"; color:var(--dim); font-size:8px; vertical-align:middle; margin-right:7px;}
+
+  /* 모달 */
+  .modal-bg{position:fixed; inset:0; z-index:50; background:rgba(4,6,9,.72); backdrop-filter:blur(3px); display:none; align-items:flex-end; justify-content:center; max-width:480px; margin:0 auto;}
+  .modal-bg.show{display:flex; animation:fade .25s;}
+  .modal{
+    width:100%; background:var(--panel2); border:1px solid var(--line2); border-bottom:none;
+    border-radius:18px 18px 0 0; padding:20px 20px calc(26px + env(safe-area-inset-bottom)); box-shadow:var(--shadow);
+    animation:slideup .3s cubic-bezier(.2,.8,.2,1); max-height:84vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  @keyframes slideup{from{transform:translateY(40px);} to{transform:none;}}
+  .modal .m-ic{display:flex; justify-content:center; margin-bottom:12px;}
+  .modal .m-ic svg{width:88px; height:88px;}
+  /* 이미지 슬롯 */
+  .imgwrap{display:inline-flex; align-items:center; justify-content:center;}
+  .imgwrap .slotimg{display:block; object-fit:cover;}
+  .modal .m-ic .imgwrap{width:100%; aspect-ratio:1/1; max-height:340px; border-radius:12px; overflow:hidden; border:1px solid var(--line2);}
+  .modal .m-ic .imgwrap .slotimg{width:100%; height:100%;}
+  .card .ic .imgwrap{width:100%; height:64px; border-radius:8px; overflow:hidden;}
+  .card .ic .imgwrap .slotimg{width:100%; height:100%;}
+  .person .ava .imgwrap, .ava .imgwrap{width:100%; height:100%; border-radius:50%; overflow:hidden;}
+  .ava .imgwrap .slotimg{width:100%; height:100%;}
+  .press-chip .pi .imgwrap{width:26px; height:26px; border-radius:5px; overflow:hidden;}
+  .press-chip .pi .imgwrap .slotimg{width:100%; height:100%;}
+  .modal h3{margin:0 0 4px; font-size:18px; text-align:center;}
+  .modal .m-sub{text-align:center; font-size:11.5px; color:var(--amber-soft); letter-spacing:.18em; text-transform:uppercase; margin-bottom:14px;}
+  .modal .m-txt{font-size:14.5px; line-height:1.75; color:var(--txt);}
+  .modal .m-txt b{color:#e8d9a8; font-weight:600;}
+  .modal .close{margin-top:18px;}
+  .obs{margin-top:14px; padding:12px 14px; border-left:2px solid var(--blood-soft); background:rgba(116,48,47,.1); border-radius:0 8px 8px 0; font-size:13px; color:#cdb3b0;}
+  .obs .lab{display:block; font-size:10px; letter-spacing:.2em; color:var(--blood); text-transform:uppercase; margin-bottom:3px;}
+
+  /* 재추궁(들이대기) */
+  .re-said{margin:6px 0 14px; padding:13px 15px; border:1px solid var(--amber-soft); background:rgba(201,162,39,.08); border-radius:11px; font-size:14px; line-height:1.7; color:#ece0bb; font-style:italic;}
+  .re-said .who{display:block; font-style:normal; font-size:11px; letter-spacing:.16em; color:var(--amber-soft); text-transform:uppercase; margin-bottom:5px;}
+  .re-flat{margin:6px 0 14px; padding:12px 15px; border:1px solid var(--line2); background:var(--bg2); border-radius:11px; font-size:13.5px; color:var(--muted); line-height:1.65;}
+  .press-hd{font-size:12px; color:var(--muted); margin:4px 0 10px;}
+  .press-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .press-chip{display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--panel); border-radius:10px; padding:10px 11px; cursor:pointer; font-size:12.5px; transition:.14s; min-height:46px;}
+  .press-chip:active{transform:scale(.97);}
+  .press-chip .pi{width:26px; height:26px; flex:none;}
+  .press-chip .pi svg{width:26px; height:26px;}
+
+  /* 단서 노트 */
+  .fab{
+    position:fixed; bottom:calc(92px + env(safe-area-inset-bottom)); right:calc(50% - 240px + 18px); z-index:8;
+    width:54px; height:54px; border-radius:50%; background:var(--panel2); border:1px solid var(--amber-soft);
+    color:#e8d9a8; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:var(--shadow); font-size:11px; font-weight:700; flex-direction:column; gap:1px;
+  }
+  @media(max-width:480px){ .fab{right:18px;} }
+  .fab .cnt{font-size:13px;}
+  .fab .cap{font-size:8px; letter-spacing:.1em; color:var(--muted);}
+  .note-list .nrow{display:flex; gap:11px; padding:11px 12px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; cursor:pointer; align-items:center; background:var(--bg2); transition:.14s; min-height:46px;}
+  .note-list .nrow.sel{border-color:var(--amber); background:rgba(201,162,39,.07);}
+  .note-list .nrow .ni{width:34px; height:34px; flex:none;}
+  .note-list .nrow .ni svg{width:34px; height:34px;}
+  .note-list .nrow .ntx .nn{font-size:13.5px; font-weight:600;}
+  .note-list .nrow .ntx .nd{font-size:11.5px; color:var(--muted);}
+  .compare-hd{font-size:12px; color:var(--muted); margin:4px 0 12px; line-height:1.6;}
+  .compare-hd b{color:var(--amber-soft);}
+  .verdict{padding:14px; border-radius:11px; margin-bottom:14px; font-size:13.5px; line-height:1.65; display:none;}
+  .verdict.core{display:block; border:1px solid var(--amber-soft); background:rgba(201,162,39,.1); color:#ece0bb;}
+  .verdict.core .vt{color:var(--amber);}
+  .verdict.confirm{display:block; border:1px solid var(--teal); background:rgba(90,138,140,.1); color:#cfe0e0;}
+  .verdict.confirm .vt{color:var(--teal);}
+  .verdict.herring{display:block; border:1px solid var(--blood-soft); background:rgba(116,48,47,.13); color:#e3c5c2;}
+  .verdict.none{display:block; border:1px solid var(--line2); background:var(--bg2); color:var(--muted);}
+  .verdict .vt{font-weight:700; color:var(--blood); margin-bottom:3px; display:block; letter-spacing:.05em;}
+
+  /* 종결 잠금 트래커 */
+  .lockbar{margin-top:18px; border:1px solid var(--line); border-radius:12px; padding:14px 15px; background:var(--bg2);}
+  .lock-row{display:flex; justify-content:space-between; align-items:center; font-size:13.5px; padding:4px 0;}
+  .lock-row b{color:var(--muted); font-variant-numeric:tabular-nums;}
+  .lock-row b.ok{color:var(--good);}
+  .lock-tip{font-size:12px; color:var(--muted); margin-top:9px; line-height:1.6; border-top:1px solid var(--line); padding-top:9px;}
+  .lock-tip b{color:var(--amber-soft);}
+  .lock-tip.ready{color:var(--good);}
+
+  /* 종결 */
+  .qblock{margin-bottom:22px;}
+  .qblock .qh{font-size:15px; font-weight:700; margin-bottom:3px;}
+  .qblock .qhint{font-size:12px; color:var(--muted); margin-bottom:12px;}
+  .opts{display:flex; flex-direction:column; gap:9px;}
+  .opt{
+    border:1px solid var(--line); background:var(--panel); border-radius:11px; padding:13px 15px;
+    cursor:pointer; font-size:14.5px; transition:.14s; display:flex; align-items:center; gap:11px; min-height:48px;
+  }
+  .opt .rdo{width:17px; height:17px; border-radius:50%; border:2px solid var(--line2); flex:none;}
+  .opt.sel{border-color:var(--amber); background:rgba(201,162,39,.08);}
+  .opt.sel .rdo{border-color:var(--amber); background:radial-gradient(circle,var(--amber) 0 4px, transparent 5px);}
+  .ev-opts{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .ev-opts .opt{font-size:13px; padding:11px 12px;}
+
+  /* 판정 결과 */
+  .reject{border:1px solid var(--blood-soft); background:rgba(116,48,47,.12); border-radius:13px; padding:18px; margin-bottom:18px;}
+  .reject.ok{border-color:var(--good); background:rgba(110,168,124,.10);}
+  .reject .rt{color:var(--blood); font-weight:700; letter-spacing:.05em; margin-bottom:8px; display:flex; align-items:center; gap:8px;}
+  .reject .rh{font-size:14.5px; line-height:1.75; color:#e3c5c2;}
+  .reject.pivot{border-color:var(--amber-soft); background:rgba(201,162,39,.1);}
+  .reject.pivot .rt{color:var(--amber);}
+  .reject.pivot .rh{color:#ece0bb;}
+
+  /* 진상 공개 */
+  #result .body{padding-top:calc(26px + env(safe-area-inset-top));}
+  .reveal-hd{text-align:center; margin-bottom:22px;}
+  .reveal-hd .rk{font-size:11px; letter-spacing:.4em; color:var(--amber); text-transform:uppercase;}
+  .reveal-hd h2{font-size:30px; margin:8px 0 0; font-weight:800; letter-spacing:.12em;}
+  .reveal-hd .rl{width:48px; height:2px; background:var(--amber); margin:14px auto 0; opacity:.7;}
+  .reveal-txt p{font-size:15px; line-height:1.85; color:var(--txt); margin:0 0 17px;}
+  .reveal-txt p b{color:#e8d9a8; font-weight:600;}
+  .reveal-txt .closing{font-size:16.5px; color:#e0d4ac; font-style:italic; border-top:1px solid var(--line); padding-top:18px; margin-top:6px;}
+  .quote-cut{margin:20px 0; text-align:center; color:var(--muted); font-size:14px;}
+  .quote-cut .who{display:block; font-size:11px; letter-spacing:.2em; color:var(--dim); margin-top:6px; text-transform:uppercase;}
+  .quote-cut .ln{font-style:italic; color:#bcc0c7;}
+  .win-badge{text-align:center; margin:6px 0 24px; color:var(--good); font-weight:700; letter-spacing:.08em; font-size:13px;}
+
+  /* 푸터 액션 */
+  .actions{padding:16px 20px calc(18px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:linear-gradient(0deg,rgba(13,16,22,.96),rgba(13,16,22,.5)); display:flex; flex-direction:column-reverse; gap:9px;}
+  .actions .btn{flex:none; width:100%;}
+  .actions .btn.ghost{color:var(--muted); padding:11px;}
+  /* 사건 일지 타임라인 */
+  .timeline{position:relative; margin:4px 0 14px; padding-left:6px;}
+  .tl-row{position:relative; padding:0 0 16px 22px; border-left:1px solid var(--line2);}
+  .tl-row:last-child{border-left-color:transparent;}
+  .tl-dot{position:absolute; left:-5px; top:3px; width:9px; height:9px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 3px rgba(201,162,39,.12);}
+  .tl-time{font-size:12.5px; font-weight:700; color:var(--amber-soft); letter-spacing:.02em;}
+  .tl-desc{font-size:14px; color:var(--txt); line-height:1.7; margin-top:3px;}
+  .tl-desc b{color:#e8d9a8; font-weight:600;}
+  .log-key{margin-top:6px; padding:14px 16px; border:1px solid var(--blood); border-radius:12px; background:rgba(155,59,59,.08); font-size:13.5px; line-height:1.75; color:#e8d2c4;}
+  .log-key b{color:#f0c9b0;}
+  /* 새 증거 배너 */
+  .newev-banner{margin-bottom:14px; padding:13px 15px; border:1px solid var(--amber); border-radius:12px; background:rgba(201,162,39,.08); font-size:13.5px; line-height:1.7; color:#e6dcc2;}
+  .newev-banner:empty{display:none;}
+  .newev-banner .ne-tag{display:inline-block; font-size:11px; font-weight:700; letter-spacing:.1em; color:#0d1016; background:var(--amber); padding:2px 8px; border-radius:6px; margin-right:8px;}
+  .newev-banner b{color:#f0e4c4;}
+  /* 핵심 모순 고르기 */
+  .contra-hd{margin:22px 0 12px; padding-top:18px; border-top:1px dashed var(--line2);}
+  .contra-q{font-size:17px; font-weight:800; color:#f0e4c4; letter-spacing:.01em;}
+  .contra-sub{font-size:13px; color:var(--muted); line-height:1.7; margin-top:6px;}
+  .contra-opt{border:1px solid var(--line2); border-radius:12px; padding:14px 15px; margin-bottom:9px; cursor:pointer; transition:.15s; background:var(--card);}
+  .contra-opt:hover{border-color:var(--amber-soft);}
+  .contra-opt.sel{border-color:var(--amber); background:rgba(201,162,39,.06);}
+  .co-pair{display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; color:var(--txt);}
+  .co-pair b{font-weight:700; color:#e8d9a8;}
+  .co-vs{color:var(--blood); font-weight:700;}
+  .contra-fb{margin-top:6px; font-size:13.5px; line-height:1.75; padding:0;}
+  .contra-fb.ok{padding:13px 15px; border-radius:11px; background:rgba(122,158,90,.12); border:1px solid var(--good); color:#d6e6c4;}
+  .contra-fb.no{padding:13px 15px; border-radius:11px; background:rgba(155,59,59,.1); border:1px solid var(--blood); color:#e8d2c4;}
+  .contra-fb b{font-weight:700;}
+  /* 기회 표시 */
+  .chances{display:flex; align-items:center; gap:9px; margin-bottom:14px;}
+  .chances .ch-lab{font-size:12px; letter-spacing:.06em; color:var(--muted);}
+  .cdot{width:11px; height:11px; border-radius:50%; background:#2a313d; border:1px solid var(--line2);}
+  .cdot.on{background:var(--blood); border-color:var(--blood); box-shadow:0 0 0 3px rgba(155,59,59,.14);}
+  /* 여벌 부츠 패널 */
+  .boot-panel{border:1px solid var(--amber); border-radius:16px; padding:24px 20px; background:rgba(201,162,39,.06); text-align:center;}
+  .boot-img{width:150px; height:120px; margin:0 auto 14px; border-radius:12px; overflow:hidden; border:1px solid var(--line2); display:flex; align-items:center; justify-content:center; background:#0c0f14;}
+  .boot-img .imgwrap{width:100%; height:100%;}
+  .boot-img .imgwrap .slotimg{width:100%; height:100%; object-fit:cover;}
+  .boot-img svg{width:84px; height:84px;}
+  .boot-name{font-size:20px; font-weight:800; letter-spacing:.02em;}
+  .boot-sub{font-size:12.5px; letter-spacing:.18em; color:var(--amber-soft); text-transform:uppercase; margin:5px 0 14px;}
+  .boot-txt{font-size:15px; line-height:1.85; color:var(--txt); text-align:left;}
+  .boot-txt b{color:#f0e4c4; font-weight:600;}
+  /* 힌트 카드 */
+  .hint-card{border:1px solid var(--line2); border-left:3px solid var(--amber); border-radius:10px; padding:13px 15px; margin-bottom:10px; background:var(--card);}
+  .hint-h{font-size:13px; font-weight:700; color:var(--amber-soft); letter-spacing:.04em; margin-bottom:5px;}
+  .hint-t{font-size:14px; line-height:1.75; color:var(--txt);}
+  .hint-t b{color:#e8d9a8; font-weight:600;}
+  /* 녹음기 */
+  .rec-box{border:1px solid var(--line2); border-radius:14px; padding:20px 18px; background:#0c0f14; text-align:center; margin:6px 0 4px;}
+  .rec-screen{font-family:'Syne Mono',monospace; font-size:15px; letter-spacing:.04em; color:#8fa0bb; background:#070a0e; border:1px solid var(--line2); border-radius:8px; padding:18px 12px; min-height:24px; margin-bottom:16px; transition:.2s;}
+  .rec-screen.playing{color:#cdd6e6; animation:recflick .3s steps(2) infinite;}
+  @keyframes recflick{0%{opacity:.6}100%{opacity:1}}
+  /* 스크랩 재검 */
+  .scrap-stack{display:flex; flex-direction:column; gap:9px; margin:4px 0;}
+  .scrap-pg{border:1px solid var(--line2); border-radius:10px; padding:14px 15px; background:#11151c; font-size:14px; color:#aeb8c8; cursor:pointer; transition:.18s;}
+  .scrap-pg:hover{border-color:var(--line3);}
+  .scrap-pg.faded{color:#5f6776; font-style:italic; background:#0d1014;}
+  .scrap-pg.opened{cursor:default;}
+  .news-clip{font-family:'Syne Mono',monospace; background:#ece6d4; color:#1a1712; border-radius:6px; padding:14px 14px 10px; text-align:left;}
+  .news-h{font-weight:700; font-size:15px; margin-bottom:6px; letter-spacing:-.01em;}
+  .news-b{font-size:12.5px; line-height:1.6; color:#3a342a;}
+  .news-name{color:#8a8170;}
+  .news-date{font-size:11px; color:#8a8170; margin-top:8px; text-align:right;}
+  /* 순서 맞추기 */
+  .slot-row{display:flex; flex-direction:column; gap:8px; margin:4px 0 14px;}
+  .slot{display:flex; align-items:center; gap:11px; border:1px dashed var(--line3); border-radius:11px; padding:13px 14px; background:#0e1218; min-height:20px; cursor:pointer; transition:.15s;}
+  .slot.filled{border-style:solid; border-color:var(--line2); background:#141922; cursor:pointer;}
+  .slot-n{flex:none; width:24px; height:24px; border-radius:50%; background:var(--accent-dim); color:var(--accent); font-size:13px; font-weight:700; display:grid; place-items:center;}
+  .slot-c{font-size:13.5px; color:#c2cad6; line-height:1.45;}
+  .slot:not(.filled) .slot-c{color:#5a626e; font-style:italic;}
+  .frag-pool{display:flex; flex-direction:column; gap:8px;}
+  .frag{border:1px solid var(--line2); border-radius:11px; padding:13px 14px; background:#161b23; font-size:13.5px; color:#d2d9e3; cursor:pointer; transition:.15s; line-height:1.45;}
+  .frag:hover{border-color:var(--accent-dim); background:#1a2029;}
+  .frag-empty{font-size:12.5px; color:var(--muted); text-align:center; padding:8px;}
+  /* 맞대보기 카드 */
+  .match-card{display:flex; align-items:stretch; gap:0; border:1px solid var(--line2); border-radius:12px; overflow:hidden; margin-bottom:9px; background:#12161d; transition:.15s;}
+  .match-card.sel{border-color:var(--accent); background:var(--accent-dim);}
+  .mc-pick{flex:1; display:flex; align-items:center; gap:11px; padding:14px 15px; cursor:pointer; font-size:14px; color:#d2d9e3;}
+  .mc-view{flex:none; padding:0 18px; border:none; border-left:1px solid var(--line2); background:#0e1218; color:var(--accent); font-size:13px; font-weight:600; cursor:pointer; transition:.15s;}
+  .mc-view:hover{background:#161b24; color:#e8d9a8;}
+  /* 취조실(침묵) */
+  .interro-room{border:1px solid var(--line2); border-radius:14px; padding:22px 18px; background:#0c0f14; margin-bottom:6px;}
+  .ir-line{font-size:14px; color:#aeb8c8; line-height:1.7; margin-bottom:6px;}
+  .ir-line.dim{color:#6b7480;}
+  .ir-quote{font-family:'Syne Mono',monospace; font-size:20px; color:#5a626e; letter-spacing:.2em; text-align:center; margin-top:14px;}
+  /* 취조 대화 */
+  .dialog{display:flex; flex-direction:column; gap:10px; margin-bottom:16px;}
+  .dl{font-size:14px; line-height:1.6; border-radius:12px; padding:12px 14px; max-width:88%;}
+  .dl.narr-d{color:#7e8aa0; font-style:italic; background:transparent; padding:4px 2px; max-width:100%; font-size:13px;}
+  .dl.det{align-self:flex-start; background:#161b22; border:1px solid var(--line2); color:#dfe5ee;}
+  .dl.sus{align-self:flex-end; background:#0e1218; border:1px solid var(--line2); color:#9aa6b6; font-family:'Syne Mono',monospace; letter-spacing:.08em;}
+  .dl.det.rev{border-color:var(--blood-soft); background:rgba(116,48,47,.10); color:#f0e4e2;}
+  .dl.sus.open{color:#e8edf4; font-family:inherit; letter-spacing:0;}
+  /* 전말 */
+  .end-tag{font-size:12px; letter-spacing:.12em; color:var(--accent); margin-bottom:14px;}
+  .end-say{font-size:17px; line-height:1.85; color:#e8edf4; font-weight:500; margin-bottom:8px;}
+  .end-p{font-size:14.5px; line-height:2; color:#bcc5d2; margin-bottom:4px;}
+  .end-p.strong{color:#dfe5ee;}
+  .end-last{font-size:16px; line-height:1.9; color:#e8d9a8; font-style:italic; margin-top:6px;}
+  .end-photo{display:flex; flex-direction:column; align-items:center; margin:4px 0;}
+  .ep-frame{width:200px; height:200px; border-radius:6px; overflow:hidden; border:3px solid #e8e2d2; box-shadow:0 8px 30px rgba(0,0,0,.6); transform:rotate(-2deg); background:#1a1f28; filter:sepia(.25) saturate(.85);}
+  .ep-frame img{width:100%; height:100%; object-fit:cover; display:block;}
+  .ep-fallback{width:100%; height:100%; align-items:center; justify-content:center; background:#222a34;}
+  .ep-fallback svg{width:60%; height:60%; opacity:.5;}
+  .ep-cap{font-size:12.5px; color:#8a8170; font-style:italic; margin-top:12px; letter-spacing:.02em;}
+  .end-title-card{text-align:center; margin-top:30px; padding-top:26px; border-top:1px solid var(--line2);}
+  .etc-mark{font-size:46px; color:var(--blood-soft); font-weight:300; line-height:1;}
+  .etc-name{font-family:"Gowun Batang",serif; font-size:26px; font-weight:700; letter-spacing:.5em; color:#e8edf4; margin:10px 0 4px; padding-left:.5em;}
+  .etc-sub{font-size:12px; color:var(--muted); letter-spacing:.05em;}
+  /* 인트로 배경 */
+  #intro{position:relative; overflow:hidden;}
+  .introbg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;}
+  .introbg-veil{position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(8,10,14,.55) 0%, rgba(8,10,14,.35) 40%, rgba(8,10,14,.92) 100%);}
+  .toast{position:fixed; left:50%; bottom:calc(150px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:var(--panel2); border:1px solid var(--line2); color:var(--txt); padding:11px 18px; border-radius:30px; font-size:13px; z-index:60; opacity:0; pointer-events:none; transition:.3s; box-shadow:var(--shadow); max-width:90%; text-align:center;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+</style>
+</head>
+<body>
+<div id="app">
+  <svg id="rain" preserveAspectRatio="none" viewBox="0 0 480 900"></svg>
+
+  <!-- ════════════════ 메뉴 ════════════════ -->
+  <section class="screen active" id="menu">
+    <div class="logo">
+      <svg width="78" height="78" viewBox="0 0 78 78" fill="none">
+        <circle cx="39" cy="39" r="36" stroke="#2a313d" stroke-width="1.5"/>
+        <path d="M39 16 C28 24 24 34 39 62 C54 34 50 24 39 16 Z" stroke="#9b3b3b" stroke-width="2" fill="none"/>
+        <path d="M39 24 C33 30 32 38 39 52 C46 38 45 30 39 24 Z" stroke="#c9a227" stroke-width="1.6" fill="none" opacity=".8"/>
+        <line x1="39" y1="30" x2="39" y2="48" stroke="#c9a227" stroke-width="1.4" opacity=".6"/>
+      </svg>
+    </div>
+    <div class="m-tag">MYSTERY FILE</div>
+    <h1>역린</h1>
+    <div class="m-line"></div>
+    <div class="m-case">사건 #003 · 회귀 回歸</div>
+    <p class="blurb">의료재단 이사장이 사옥 14층에서 떨어졌다. 자살로 보이는 죽음.<br><br>현장을 조사하고, 기록을 모으고, 네 사람을 심문하라. 범인을 잡는 건 시작일 뿐 — 진짜 질문은, <b>왜</b>다.</p>
+    <button class="btn primary" onclick="go('intro')">수사 시작</button>
+    <a href="index.html" style="margin-top:16px; font-size:12px; color:#565d6a; letter-spacing:.05em; text-decoration:none;">← 사건 선택</a>
+  </section>
+
+  <!-- ════════════════ 인트로 ════════════════ -->
+  <section class="screen" id="intro">
+    <img src="case3/scene2.png" alt="" class="introbg" onerror="this.style.display='none';">
+    <div class="introbg-veil"></div>
+    <div class="body" style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:flex-end; min-height:100vh; min-height:100dvh; padding-bottom:calc(48px + env(safe-area-inset-bottom));">
+      <div id="introLines" style="font-size:16px; line-height:2.1; color:#eef1f6; letter-spacing:.01em; text-shadow:0 2px 12px rgba(0,0,0,.9);"></div>
+      <button class="btn primary" id="introBtn" style="margin-top:30px; opacity:0; transition:opacity .6s;" onclick="go('s1')">현장으로 →</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ S1 현장 ════════════════ -->
+  <section class="screen" id="s1">
+    <header>
+      <div class="case-tag">현장 · The Scene</div>
+      <div class="case-title">14층, 그 밤</div>
+      <div class="scene-sub">한태규의 집무실. 통창은 열려 있고, 책상엔 유서가 놓여 있다. 직접 살펴라.</div>
+      <div class="progress"><i class="pdot on"></i><i class="pdot"></i><i class="pdot"></i><i class="pdot"></i><i class="pdot"></i></div>
+    </header>
+    <div class="body">
+      <p class="narr">현장의 빛나는 지점을 <em>탭</em>해 조사하라. 모든 지점을 살펴야 다음으로 넘어갈 수 있다.</p>
+      <div class="scene-wrap" id="sceneArt"></div>
+      <div class="hint-tap" id="s1count">조사한 지점 0 / 3</div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('intro')">← 처음으로</button>
+      <button class="btn primary" id="s1next" disabled onclick="go('s2')">현장 조사 완료 · 자료로</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ S2 자료 ════════════════ -->
+  <section class="screen" id="s2">
+    <header>
+      <div class="case-tag">자료 · Records</div>
+      <div class="case-title">남겨진 기록들</div>
+      <div class="scene-sub">부검 소견, 출입 기록, 그리고 한태규가 남긴 것들.</div>
+      <div class="progress"><i class="pdot on"></i><i class="pdot on"></i><i class="pdot"></i><i class="pdot"></i><i class="pdot"></i></div>
+    </header>
+    <div class="body">
+      <p class="narr">각 자료를 <em>탭</em>해 검토하라. 모두 검토해야 다음으로.</p>
+      <div class="grid" id="recGrid"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('s1')">← 현장으로</button>
+      <button class="btn primary" id="s2next" disabled onclick="go('s3')">자료 검토 완료 · 심문으로</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ S3 심문(1차) ════════════════ -->
+  <section class="screen" id="s3">
+    <header>
+      <div class="case-tag">심문 · Interrogation</div>
+      <div class="case-title">네 사람의 진술</div>
+      <div class="scene-sub">그 밤 사옥에 남아 있던 네 사람. 저마다의 이야기를 듣는다.</div>
+      <div class="progress"><i class="pdot on"></i><i class="pdot on"></i><i class="pdot on"></i><i class="pdot"></i><i class="pdot"></i></div>
+    </header>
+    <div class="body">
+      <p class="narr">네 사람의 진술을 <em>탭</em>해 펼쳐 읽어라. 모두 읽어야 다음으로.</p>
+      <div id="interroList"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('s2')">← 자료로</button>
+      <button class="btn primary" id="s3next" disabled onclick="go('s4')">재추궁으로 · 증거 들이대기</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ 2부 P1 — 녹음기 ════════════════ -->
+  <section class="screen" id="p2rec">
+    <header>
+      <div class="case-tag">재수사 · 첫 의문</div>
+      <div class="case-title">덮을 수 없다</div>
+      <div class="scene-sub">사건은 자살로 닫힐 뻔했다. 그러나 그의 손에, 그의 것이 아닌 물건 하나가 있었다.</div>
+    </header>
+    <div class="body">
+      <p class="narr">한태규가 마지막으로 쥐고 있던 <em>낡은 녹음기.</em> 그의 물건이 아니다. 재생해 들어보라.</p>
+      <div class="rec-box">
+        <div class="rec-screen" id="recScreen">— TAPE 00:00 —</div>
+        <button class="btn primary" id="recBtn" onclick="playRec()">▶ 재생</button>
+      </div>
+      <div id="recMemo" class="contra-fb" style="display:none;"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('menu')">← 처음으로</button>
+      <button class="btn primary" id="p2recNext" disabled onclick="go('p2scrap')">'간병인'… 어디서 봤다 →</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ 2부 P2 — 스크랩 재검 ════════════════ -->
+  <section class="screen" id="p2scrap">
+    <header>
+      <div class="case-tag">재수사 · 바랜 종이</div>
+      <div class="case-title">그 사이에 끼어 있던 것</div>
+      <div class="scene-sub">녹음기의 '간병인'. 어디서 본 단어다. 한태규가 남긴 스크랩 묶음을 다시 펼친다.</div>
+    </header>
+    <div class="body">
+      <p class="narr">표창과 준공, 봉사상 기사들. 처음엔 잉크가 바래 흘려보냈다. <em>한 장씩 빛에 비춰</em> 다시 들여다보라.</p>
+      <div class="scrap-stack" id="scrapStack">
+        <div class="scrap-pg" onclick="flipScrap(this)">재단 표창 — "지역 의료 발전 공로"</div>
+        <div class="scrap-pg" onclick="flipScrap(this)">신축 병동 준공 기념 화보</div>
+        <div class="scrap-pg" onclick="flipScrap(this)">의료봉사 10년 — 미담 기사</div>
+        <div class="scrap-pg faded" data-reveal="1" onclick="flipScrap(this)">…잉크가 바래 잘 보이지 않는 사회면 한 장</div>
+        <div class="scrap-pg" onclick="flipScrap(this)">재단 후원의 밤 — 행사 스케치</div>
+      </div>
+      <div id="scrapFound" class="contra-fb" style="display:none;"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('p2rec')">← 녹음기</button>
+      <button class="btn primary" id="p2scrapNext" disabled onclick="go('p3past')">12년 전, 그 병원 →</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ 2부 P3 — 과거 재구성 ════════════════ -->
+  <section class="screen" id="p3past">
+    <header>
+      <div class="case-tag">재수사 · 열두 해 전</div>
+      <div class="case-title">무슨 일이 있었나</div>
+      <div class="scene-sub">12년 전, 이 병원의 조각들. 무엇이 무엇을 불렀는지 — 인과의 순서로 꿰어라.</div>
+    </header>
+    <div class="body">
+      <div class="chances" id="pastChanceBox"></div>
+
+      <div id="archStage">
+        <p class="narr">병원 옛 기록 창고. 한태규가 지우지 못한 것들이 어딘가 처박혀 있다. <em>선반을 뒤져</em> 남은 자료를 찾아라. <span style="color:var(--muted)">(<span id="archCount">0 / 3</span>)</span></p>
+        <div class="scene-wrap"><div id="archArt"></div></div>
+        <p class="narr" style="color:var(--muted); font-size:13px;">찾은 자료가 모이면, 그 자료들로 그날의 순서를 맞추게 된다.</p>
+      </div>
+
+      <div id="orderStage" style="display:none;">
+        <p class="narr">찾아낸 자료를 <em>일어난 순서대로</em> ①~④ 자리에 넣어라. 날짜는 없다. <b>무엇이 있어야 그다음이 가능한지</b>를 따져라.</p>
+        <div class="slot-row" id="slotRow"></div>
+        <div class="frag-pool" id="fragPool"></div>
+        <button class="btn primary" id="orderSubmit" disabled onclick="submitOrder()" style="width:100%; margin-top:14px;">이 순서로 확정</button>
+        <div id="orderFb" class="contra-fb" style="display:none;"></div>
+      </div>
+
+      <div id="quizStage" style="display:none;">
+        <p class="narr">순서가 맞았다. 그렇다면 — <em>12년 전, 진짜로 무슨 일이 있었나?</em></p>
+        <div class="opts" id="pastQuiz"></div>
+        <div id="quizFb" class="contra-fb" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('p2scrap')">← 스크랩</button>
+      <button class="btn primary" id="p3next" disabled onclick="go('p4match')">그 간병인은, 누구인가 →</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ 2부 P4 — 맞대보기 (성씨 딸깍) ════════════════ -->
+  <section class="screen" id="p4match">
+    <header>
+      <div class="case-tag">재수사 · 맞대보기</div>
+      <div class="case-title">맞대보기</div>
+      <div class="scene-sub">지금까지 모은 것들을 한자리에 펼친다. 어딘가, 겹치는 이름이 있다.</div>
+    </header>
+    <div class="body">
+      <div class="chances" id="matchChanceBox"></div>
+      <p class="narr">두 기록을 <em>맞대어</em> 보라. 같은 것을 가리키는 두 장을 골라 겹치면 된다. (두 장 선택)</p>
+      <div class="opts" id="matchOpts"></div>
+      <div id="matchFb" class="contra-fb" style="display:none;"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('p3past')">← 12년 전</button>
+      <button class="btn primary" id="matchSubmit" disabled onclick="submitMatch()">맞대본다</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ 2부 P4b — 딸깍 연출 ════════════════ -->
+  <section class="screen" id="p4click">
+    <div class="introbg-veil" style="background:#070a0e;"></div>
+    <div class="body" style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; min-height:100vh; min-height:100dvh;">
+      <div id="clickLines" style="font-size:16px; line-height:2.15; color:#d7dbe2; letter-spacing:.01em;"></div>
+      <div id="clickRec" class="rec-box" style="display:none; margin-top:20px;">
+        <div class="rec-screen" id="clickRecScreen">▶ …재생</div>
+      </div>
+      <button class="btn primary" id="clickBtn" style="margin-top:30px; opacity:0; transition:opacity .6s;" onclick="go('p6final')">그를, 다시 마주한다 →</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ 2부 P6 — 최후 대면(대화+증거 들이대기) ════════════════ -->
+  <section class="screen" id="p6final">
+    <header>
+      <div class="case-tag">최종 · 대면</div>
+      <div class="case-title">열두 해를 벼른</div>
+      <div class="scene-sub">취조실. 유현은 입을 열지 않는다. 그의 침묵을 깰 단 하나를 들이대라.</div>
+    </header>
+    <div class="body">
+      <div class="dialog" id="p6dialog"></div>
+      <div class="chances" id="finalChanceBox"></div>
+      <p class="narr" id="p6prompt">책상 위에 단서를 펼친다. 이 죽음이 우발이 아니라 <b>오래 벼른 복수</b>임을 증명할 — 같은 곳을 가리키는 두 기록을 골라 들이대라. <span style="color:var(--muted)">(보기로 내용을 확인하고, 두 장 선택)</span></p>
+      <div class="opts" id="finalOpts"></div>
+      <div id="finalFb" class="contra-fb" style="display:none;"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('p4click')">← 돌아가기</button>
+      <button class="btn primary" id="finalSubmit" disabled onclick="submitFinal()">들이댄다</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ 2부 P7 — 전말 「거울」 ════════════════ -->
+  <section class="screen" id="p7end">
+    <div class="introbg-veil" style="background:#070a0e;"></div>
+    <div class="body" style="position:relative; z-index:2; padding-top:40px; padding-bottom:60px;">
+      <div id="endFlow"></div>
+    </div>
+  </section>
+
+  <!-- ════════════════ 묶음1 스텁 ════════════════ -->
+  <!-- ════════════════ S4 재추궁 ════════════════ -->
+  <section class="screen" id="s4">
+    <header>
+      <div class="case-tag">재추궁 · Confrontation</div>
+      <div class="case-title">다시, 마주 앉다</div>
+      <div class="scene-sub">손에 쥔 증거를 들이민다. 거짓말은 사실 앞에서 흔들린다.</div>
+      <div class="progress"><i class="pdot on"></i><i class="pdot on"></i><i class="pdot on"></i><i class="pdot on"></i><i class="pdot"></i><i class="pdot"></i><i class="pdot"></i></div>
+    </header>
+    <div class="body">
+      <p class="narr">인물을 <em>탭</em>해 <em>증거를 들이대라</em>. 맞는 증거 앞에선 진술이 흔들린다. <b>네 사람 모두에게서 균열 진술을 끌어내야</b> 다음으로 넘어갈 수 있다.</p>
+      <div id="reList"></div>
+      <div class="lockbar" id="lockBar"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('s3')">← 진술 다시 보기</button>
+      <button class="btn primary" id="s4next" disabled onclick="go('s4log')">사건 일지 정리 →</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ S4LOG 사건 일지 ════════════════ -->
+  <section class="screen" id="s4log">
+    <header>
+      <div class="case-tag">정리 · CASE LOG</div>
+      <div class="case-title">사건 일지</div>
+      <div class="scene-sub">지금까지 밝혀진 사실을 시간순으로 정리한다.</div>
+      <div class="progress"><i class="pdot on"></i><i class="pdot on"></i><i class="pdot on"></i><i class="pdot on"></i><i class="pdot on"></i><i class="pdot"></i><i class="pdot"></i></div>
+    </header>
+    <div class="body">
+      <p class="narr">그날 밤의 시간표다. <em>천천히 읽어라.</em> 어긋나는 한 곳이 사건의 열쇠다.</p>
+      <div class="timeline" id="logTimeline"></div>
+      <div class="log-key" id="logKey"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('s4')">← 재추궁으로</button>
+      <button class="btn primary" onclick="go('kill')">자살인지 따져본다 →</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ KILL 타살 확정 (모순 2쌍) ════════════════ -->
+  <section class="screen" id="kill">
+    <header>
+      <div class="case-tag">추론 · 자살인가</div>
+      <div class="case-title">이건 자살이 아니다</div>
+      <div class="scene-sub">두 가지 모순이 한 방향을 가리킨다. 각각을 이루는 단서를 짚어라.</div>
+    </header>
+    <div class="body">
+      <div class="qblock">
+        <div class="qh">① 이 유서는 그가 쓴 것이 아니다</div>
+        <div class="qhint">그렇게 말할 수 있게 하는 단서 <b>두 가지</b>를 짚어라.</div>
+        <div class="opts" id="killOpts1"></div>
+      </div>
+      <div class="qblock">
+        <div class="qh">② 그는 죽을 생각이 없었다</div>
+        <div class="qhint">그 밤 그의 행동이 말해 주는 단서 <b>두 가지</b>를 짚어라.</div>
+        <div class="opts" id="killOpts2"></div>
+      </div>
+      <div id="killFb" class="contra-fb"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('s4log')">← 사건 일지</button>
+      <button class="btn primary" id="killSubmit" disabled onclick="submitKill()">타살 확정</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ SCOPE 내부자 확정(킥) ════════════════ -->
+  <section class="screen" id="scope">
+    <header>
+      <div class="case-tag">추론 · 누구의 손인가</div>
+      <div class="case-title">밖인가, 안인가</div>
+      <div class="scene-sub">살해당했다. 그렇다면 — 밖에서 든 자인가, 사옥 안의 누군가인가.</div>
+    </header>
+    <div class="body">
+      <p class="narr">외부 침입이 아니라 <em>안의 사람</em>임을 증명하는 단서 하나를 짚어라.</p>
+      <div class="opts" id="scopeOpts"></div>
+      <div id="scopeFb" class="contra-fb"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('kill')">← 타살 확정</button>
+      <button class="btn primary" id="scopeSubmit" disabled onclick="submitScope()">제출</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ ACCUSE 범인 지목 ════════════════ -->
+  <section class="screen" id="accuse">
+    <header>
+      <div class="case-tag">지목 · 범인</div>
+      <div class="case-title">누가 떨어뜨렸나</div>
+      <div class="scene-sub">자살이 아니라면, 그 밤 14층에 손을 댄 사람은 누구인가.</div>
+    </header>
+    <div class="body">
+      <div class="chances" id="accChanceBox"></div>
+      <div id="accReject"></div>
+      <p class="narr">사옥 안의 누군가다. 그날 <em>연차였다면서</em>, 그 시각 14층에 있었던 사람 — 카드 로그와 진술을 맞대 보면 보인다. 단 한 사람을 지목하라.</p>
+      <div class="opts" id="accuseOpts"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="go('kill')">← 타살 확정</button>
+      <button class="btn primary" id="accSubmit" disabled onclick="submitAccuse()">범인 지목</button>
+    </div>
+  </section>
+
+  <!-- ════════════════ MONO2 2부 전환 독백 ════════════════ -->
+  <section class="screen" id="mono2">
+    <div class="introbg-veil" style="background:#070a0e;"></div>
+    <div class="body" style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; min-height:100vh; min-height:100dvh;">
+      <div id="mono2Lines" style="font-size:16px; line-height:2.15; color:#d7dbe2; letter-spacing:.01em;"></div>
+      <button class="btn primary" id="mono2Btn" style="margin-top:34px; opacity:0; transition:opacity .6s;" onclick="go('p2rec')">왜, 를 쫓는다 →</button>
+    </div>
+  </section>
+
+
+
+  <!-- 단서 노트 FAB -->
+  <div class="fab" id="noteFab" onclick="openNotes()" style="display:none;">
+    <span class="cnt" id="noteCnt">0</span><span class="cap">단서</span>
+  </div>
+</div>
+
+<!-- 범용 모달(증거/재추궁) -->
+<div class="modal-bg" id="evModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="evModalInner"></div>
+</div>
+
+<!-- 단서 노트 모달 -->
+<div class="modal-bg" id="noteModal" onclick="if(event.target===this)closeNotes()">
+  <div class="modal" id="noteModalInner"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   역린 — 사건 #003 · 데이터
+   주의: 트릭/동기는 주석에만. 표면 텍스트엔 어떤 암시도 넣지 않는다.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── 인라인 SVG 아이콘 ── */
+const ICON = {
+  body:`<svg viewBox="0 0 64 64" fill="none">
+      <ellipse cx="32" cy="50" rx="24" ry="8" fill="#3a1413" opacity=".5"/>
+      <circle cx="20" cy="26" r="7" fill="#222834" stroke="#5a626e" stroke-width="1.4"/>
+      <path d="M26 30 q14 -6 26 2 q4 2 6 6 q-6 4 -12 2 q-12 -2 -22 -2 q-4 -4 2 -8z" fill="#1b212a" stroke="#5a626e" stroke-width="1.2"/>
+      <path d="M44 38 q8 2 12 8" stroke="#3a424e" stroke-width="3" stroke-linecap="round"/>
+      <path d="M14 30 l4 4 M22 28 l-3 5" stroke="#3a1413" stroke-width="2"/>
+    </svg>`,
+  weapon:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="30" y="8" width="4" height="42" rx="2" fill="#9aa3b0" stroke="#5a626e" stroke-width="1"/>
+      <path d="M32 8 q-8 0 -8 8 l16 0 q0 -8 -8 -8z" fill="#3a424e" stroke="#5a626e" stroke-width="1.2"/>
+      <rect x="26" y="50" width="12" height="8" rx="2" fill="#1e242e" stroke="#5a626e" stroke-width="1.2"/>
+      <circle cx="40" cy="14" r="1.4" fill="#9b3b3b"/>
+    </svg>`,
+  prints:`<svg viewBox="0 0 64 64" fill="none">
+      <ellipse cx="22" cy="24" rx="7" ry="10" fill="#2a313d" stroke="#5a626e" stroke-width="1.2"/>
+      <ellipse cx="22" cy="14" rx="4" ry="3" fill="#2a313d"/>
+      <ellipse cx="40" cy="42" rx="7" ry="10" fill="#1e242e" stroke="#5a626e" stroke-width="1.2"/>
+      <ellipse cx="40" cy="32" rx="4" ry="3" fill="#1e242e"/>
+    </svg>`,
+  boots:`<svg viewBox="0 0 64 64" fill="none">
+      <path d="M24 10 l8 0 l1 26 l13 6 q4 2 4 6 l0 4 l-26 0 l0 -48z" fill="#1e242e" stroke="#5a626e" stroke-width="1.4"/>
+      <line x1="24" y1="52" x2="50" y2="52" stroke="#3a424e" stroke-width="3"/>
+      <path d="M25 18 h7 M25 26 h7" stroke="#3a424e" stroke-width="1.3"/>
+    </svg>`,
+  weather:`<svg viewBox="0 0 64 64" fill="none">
+      <path d="M18 30 q-8 0 -8 8 q0 8 9 8 l24 0 q9 0 9 -9 q0 -9 -10 -9 q-2 -8 -12 -8 q-10 0 -12 10z" fill="#1d2230" stroke="#9aa3b0" stroke-width="1.3"/>
+      <line x1="22" y1="50" x2="19" y2="58" stroke="#5a8a8c" stroke-width="2" stroke-linecap="round"/>
+      <line x1="32" y1="50" x2="29" y2="58" stroke="#5a8a8c" stroke-width="2" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="39" y2="56" stroke="#5a8a8c" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+    </svg>`,
+  patrol:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="16" y="10" width="32" height="44" rx="3" fill="#161b22" stroke="#5a626e" stroke-width="1.4"/>
+      <rect x="26" y="6" width="12" height="8" rx="2" fill="#2a313d" stroke="#5a626e" stroke-width="1.2"/>
+      <line x1="22" y1="24" x2="42" y2="24" stroke="#9aa3b0" stroke-width="1.6"/>
+      <line x1="22" y1="32" x2="42" y2="32" stroke="#3a424e" stroke-width="1.5"/>
+      <line x1="22" y1="40" x2="36" y2="40" stroke="#3a424e" stroke-width="1.5"/>
+      <path d="M22 47 l3 3 l5 -6" stroke="#5a8a8c" stroke-width="1.6" fill="none"/>
+    </svg>`,
+  forensic:`<svg viewBox="0 0 64 64" fill="none">
+      <ellipse cx="26" cy="30" rx="6" ry="9" fill="#1e242e" stroke="#5a626e" stroke-width="1.1"/>
+      <ellipse cx="26" cy="21" rx="3.5" ry="2.6" fill="#1e242e"/>
+      <circle cx="40" cy="38" r="12" fill="none" stroke="#c9a227" stroke-width="2.2"/>
+      <line x1="49" y1="47" x2="57" y2="55" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="40" cy="40" rx="3" ry="4.5" fill="#9b3b3b" opacity=".7"/>
+    </svg>`,
+  bootmatch:`<svg viewBox="0 0 64 64" fill="none">
+      <path d="M22 10 l7 0 l1 22 l11 5 q3 2 3 5 l0 4 l-22 0 l0 -40z" fill="#1e242e" stroke="#5a626e" stroke-width="1.3"/>
+      <line x1="22" y1="44" x2="44" y2="44" stroke="#3a424e" stroke-width="2.6"/>
+      <path d="M44 24 l4 4 l8 -9" stroke="#5fa974" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>`,
+  will:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="14" y="8" width="36" height="48" rx="3" fill="#161b22" stroke="#5a626e" stroke-width="1.5"/>
+      <line x1="20" y1="18" x2="44" y2="18" stroke="#9aa3b0" stroke-width="2"/>
+      <line x1="20" y1="25" x2="44" y2="25" stroke="#3a424e" stroke-width="1.5"/>
+      <line x1="20" y1="31" x2="38" y2="31" stroke="#3a424e" stroke-width="1.5"/>
+      <line x1="20" y1="37" x2="44" y2="37" stroke="#3a424e" stroke-width="1.5"/>
+      <circle cx="40" cy="46" r="7" fill="#74302f" opacity=".5" stroke="#9b3b3b" stroke-width="1.4"/>
+    </svg>`,
+  debt:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="12" y="14" width="40" height="36" rx="3" fill="#161b22" stroke="#5a626e" stroke-width="1.5"/>
+      <line x1="18" y1="24" x2="46" y2="24" stroke="#3a424e" stroke-width="1.4"/>
+      <line x1="18" y1="40" x2="46" y2="40" stroke="#3a424e" stroke-width="1.4"/>
+      <text x="32" y="37" font-size="13" fill="#9b3b3b" text-anchor="middle" font-family="serif">−₩</text>
+    </svg>`,
+  affair:`<svg viewBox="0 0 64 64" fill="none">
+      <circle cx="22" cy="22" r="7" fill="#2a313d"/>
+      <path d="M10 46 q0 -12 12 -12 t12 12" fill="#2a313d"/>
+      <circle cx="44" cy="22" r="7" fill="#1e242e"/>
+      <path d="M32 46 q0 -12 12 -12 t12 12" fill="#1e242e"/>
+      <path d="M32 50 q-4 -4 -4 -7 q0 -3 3 -3 q1 0 1 1 q0 -1 1 -1 q3 0 3 3 q0 3 -4 7z" fill="#9b3b3b"/>
+      <line x1="30" y1="44" x2="34" y2="52" stroke="#0a0d12" stroke-width="1.4"/>
+    </svg>`,
+  pills:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="22" y="20" width="20" height="30" rx="3" fill="#15191f" stroke="#5a626e" stroke-width="2"/>
+      <rect x="20" y="14" width="24" height="9" rx="2" fill="#2a313d" stroke="#5a626e" stroke-width="1.6"/>
+      <rect x="26" y="30" width="12" height="3" rx="1.5" fill="#9b3b3b" opacity=".7"/>
+      <rect x="26" y="37" width="12" height="3" rx="1.5" fill="#5a626e" opacity=".6"/>
+      <circle cx="49" cy="46" r="4" fill="#cdd1d8" opacity=".5"/>
+      <circle cx="44" cy="50" r="3" fill="#cdd1d8" opacity=".4"/>
+    </svg>`,
+  window:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="14" y="10" width="36" height="44" rx="2" fill="#0c1320" stroke="#5a626e" stroke-width="2"/>
+      <line x1="32" y1="10" x2="32" y2="54" stroke="#5a626e" stroke-width="1.6"/>
+      <line x1="14" y1="32" x2="50" y2="32" stroke="#5a626e" stroke-width="1.6"/>
+      <rect x="20" y="16" width="4" height="7" fill="#c9a227" opacity=".7"/>
+      <rect x="38" y="38" width="4" height="7" fill="#9aa9c4" opacity=".7"/>
+      <line x1="14" y1="10" x2="14" y2="54" stroke="#9b3b3b" stroke-width="2" opacity=".6"/>
+    </svg>`,
+  person:`<svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="24" r="11" fill="#2a313d"/><path d="M12 56 q0 -16 20 -16 t20 16" fill="#2a313d"/></svg>`,
+  coat:`<svg viewBox="0 0 64 64" fill="none">
+      <path d="M26 14 l-12 6 l4 10 l4 -2 l0 24 l28 0 l0 -24 l4 2 l4 -10 l-12 -6 q-4 6 -10 6 t-10 -6z" fill="#1e242e" stroke="#5a626e" stroke-width="1.5"/>
+      <line x1="32" y1="20" x2="32" y2="48" stroke="#3a424e" stroke-width="1.4"/>
+      <path d="M18 40 q-2 6 -1 10" stroke="#6aa0c8" stroke-width="1.4" fill="none" opacity=".7"/>
+      <path d="M46 40 q2 6 1 10" stroke="#6aa0c8" stroke-width="1.4" fill="none" opacity=".7"/>
+    </svg>`,
+  hairpin:`<svg viewBox="0 0 64 64" fill="none">
+      <path d="M20 44 q-4 -24 12 -28 q16 4 12 28" stroke="#9aa3b0" stroke-width="2.4" fill="none"/>
+      <path d="M24 44 q-3 -20 8 -23 q11 3 8 23" stroke="#3a424e" stroke-width="1.6" fill="none"/>
+      <circle cx="20" cy="45" r="2.4" fill="#c9a227"/>
+      <circle cx="44" cy="45" r="2.4" fill="#c9a227"/>
+    </svg>`,
+  printtime:`<svg viewBox="0 0 64 64" fill="none">
+      <circle cx="32" cy="32" r="18" fill="#10141b" stroke="#5a626e" stroke-width="1.6"/>
+      <line x1="32" y1="32" x2="32" y2="20" stroke="#9aa3b0" stroke-width="2"/>
+      <line x1="32" y1="32" x2="41" y2="36" stroke="#c9a227" stroke-width="2"/>
+      <circle cx="32" cy="32" r="2" fill="#9aa3b0"/>
+    </svg>`,
+  ic_op:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="13" y="9" width="38" height="48" rx="3" fill="#161b22" stroke="#5a626e" stroke-width="1.5"/>
+      <rect x="25" y="6" width="14" height="7" rx="2" fill="#222a34" stroke="#5a626e" stroke-width="1.2"/>
+      <g opacity=".9"><rect x="20" y="17" width="9" height="9" rx="1.5" fill="none" stroke="#9b3b3b" stroke-width="1.6"/>
+      <line x1="24.5" y1="19" x2="24.5" y2="24" stroke="#9b3b3b" stroke-width="1.6"/><line x1="22" y1="21.5" x2="27" y2="21.5" stroke="#9b3b3b" stroke-width="1.6"/></g>
+      <line x1="33" y1="20" x2="45" y2="20" stroke="#9aa3b0" stroke-width="1.6"/>
+      <line x1="33" y1="25" x2="45" y2="25" stroke="#3a424e" stroke-width="1.4"/>
+      <line x1="20" y1="34" x2="44" y2="34" stroke="#3a424e" stroke-width="1.4"/>
+      <line x1="20" y1="40" x2="44" y2="40" stroke="#3a424e" stroke-width="1.4"/>
+      <text x="20" y="51" font-size="7.5" fill="#c9a227" font-family="monospace">03:47</text>
+    </svg>`,
+  ic_chart:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="11" y="12" width="42" height="40" rx="3" fill="#161b22" stroke="#5a626e" stroke-width="1.5"/>
+      <rect x="11" y="12" width="42" height="9" rx="3" fill="#1b212b"/>
+      <path d="M15 38 h7 l3 -9 l4 16 l4 -20 l3 13 h11" fill="none" stroke="#5a8a8c" stroke-width="1.8" stroke-linejoin="round"/>
+      <rect x="30" y="42" width="14" height="4.5" rx="1" fill="#9b3b3b" opacity=".55"/>
+      <line x1="30" y1="44" x2="44" y2="44" stroke="#c9a227" stroke-width="1" stroke-dasharray="2 2"/>
+    </svg>`,
+  ic_report:`<svg viewBox="0 0 64 64" fill="none">
+      <rect x="14" y="9" width="36" height="46" rx="3" fill="#161b22" stroke="#5a626e" stroke-width="1.5"/>
+      <line x1="20" y1="18" x2="44" y2="18" stroke="#9aa3b0" stroke-width="1.6"/>
+      <line x1="20" y1="24" x2="40" y2="24" stroke="#3a424e" stroke-width="1.4"/>
+      <line x1="20" y1="29" x2="44" y2="29" stroke="#3a424e" stroke-width="1.4"/>
+      <line x1="20" y1="34" x2="36" y2="34" stroke="#3a424e" stroke-width="1.4"/>
+      <g transform="rotate(-14 38 42)"><circle cx="38" cy="42" r="9" fill="none" stroke="#9b3b3b" stroke-width="1.8" opacity=".8"/>
+      <text x="38" y="45" font-size="6.5" fill="#9b3b3b" text-anchor="middle" font-family="serif" opacity=".9">비공개</text></g>
+    </svg>`,
+};
+
+/* ── 인물 아바타 SVG ── */
+const AVA = {
+  yk:`<svg viewBox="0 0 64 64">
+      <rect width="64" height="64" fill="#0c0f14"/>
+      <path d="M14 64 q2 -20 18 -20 t18 20" fill="#222834"/>
+      <path d="M18 28 q0 -16 14 -16 t14 16 q2 14 -3 20 q-2 6 -11 6 t-11 -6 q-5 -6 -3 -20" fill="#cbb29a"/>
+      <path d="M15 32 q-3 -24 17 -24 t17 24 q-3 -10 -6 -13 q-5 18 -22 16 q-4 -1 -6 -3z" fill="#2a2018"/>
+      <path d="M48 30 q4 10 1 22 l-3 -12z" fill="#2a2018"/>
+      <path d="M22 28 q3 -2 6 0 M36 28 q3 -2 6 0" stroke="#241c18" stroke-width="1.3" fill="none"/>
+      <circle cx="26" cy="32" r="1.4" fill="#241c18"/><circle cx="38" cy="32" r="1.4" fill="#241c18"/>
+      <path d="M29 42 q3 2 6 0" stroke="#9b5a5a" stroke-width="1.4" fill="none"/>
+    </svg>`,
+  kt:`<svg viewBox="0 0 64 64">
+      <rect width="64" height="64" fill="#0c0f14"/>
+      <path d="M12 64 q3 -18 20 -18 t20 18" fill="#1e2733"/>
+      <path d="M19 30 q0 -16 13 -16 t13 16 q1 12 -3 18 q-3 6 -10 6 t-10 -6 q-4 -6 -3 -18" fill="#b08a6a"/>
+      <path d="M17 26 q-1 -16 15 -16 t15 16 q-4 -7 -8 -8 l-1 4 -3 -5 -3 5 -1 -4 q-9 1 -14 8z" fill="#211c17"/>
+      <path d="M22 30 h6 M37 30 h6" stroke="#211c17" stroke-width="1.7"/>
+      <circle cx="25.5" cy="33" r="1.4" fill="#211c17"/><circle cx="39" cy="33" r="1.4" fill="#211c17"/>
+      <path d="M28 46 q4 2 8 0" stroke="#3a2e26" stroke-width="1.4" fill="none"/>
+      <path d="M24 44 q8 4 16 0 l0 4 q-8 4 -16 0z" fill="#2a2520"/>
+    </svg>`,
+  ys:`<svg viewBox="0 0 64 64">
+      <rect width="64" height="64" fill="#0c0f14"/>
+      <path d="M14 64 q2 -19 18 -19 t18 19" fill="#241f2a"/>
+      <path d="M19 29 q0 -15 13 -15 t13 15 q1 13 -3 19 q-2 6 -10 6 t-10 -6 q-4 -6 -3 -19" fill="#d2bca6"/>
+      <path d="M16 30 q-2 -20 16 -20 t16 20 q-2 -6 -5 -9 q-4 6 -11 6 t-11 -6 q-3 3 -5 9z" fill="#3a2433"/>
+      <path d="M14 30 q-2 14 4 26 l1 -18z M50 30 q2 14 -4 26 l-1 -18z" fill="#3a2433"/>
+      <path d="M22 28 q3 -1 6 1 M36 29 q3 -2 6 -1" stroke="#2a1f26" stroke-width="1.2" fill="none"/>
+      <circle cx="26" cy="32" r="1.4" fill="#2a1f26"/><circle cx="38" cy="32" r="1.4" fill="#2a1f26"/>
+      <path d="M29 42 q3 1 6 0" stroke="#a35f5f" stroke-width="1.4" fill="none"/>
+    </svg>`,
+  mh:`<svg viewBox="0 0 64 64">
+      <rect width="64" height="64" fill="#0c0f14"/>
+      <path d="M14 64 q2 -18 18 -18 t18 18" fill="#1e2a26"/>
+      <path d="M20 30 q0 -15 12 -15 t12 15 q1 12 -3 17 q-3 5 -9 5 t-9 -5 q-4 -5 -3 -17" fill="#c19a78"/>
+      <path d="M18 27 q0 -15 14 -15 t14 15 q-3 -6 -7 -7 q-7 3 -14 2 q-4 1 -7 5z" fill="#23201a"/>
+      <circle cx="26" cy="31" r="1.5" fill="#23201a"/><circle cx="38" cy="31" r="1.5" fill="#23201a"/>
+      <path d="M23 28 q3 -1 5 0 M36 28 q3 -1 5 0" stroke="#23201a" stroke-width="1.1" fill="none"/>
+      <path d="M30 41 q2 1 4 0" stroke="#8a5a44" stroke-width="1.3" fill="none"/>
+    </svg>`,
+};
+AVA.dg=AVA.mh; AVA.ts=AVA.kt; AVA.sy=AVA.mh; AVA.yj=AVA.ys;
+
+
+/* ── 이미지 슬롯: 같은 폴더에 jpg가 있으면 그 사진을, 없으면 SVG를 보여준다 ──
+   증거 사진 = case3/{증거id}.png
+   인물 사진 = case3/{인물id}.png
+   배경 = case3/scene2.png(인트로) / case3/scene.png(현장) / case3/archive.png(과거)
+   사진을 넣으면 자동으로 뜨고, 없으면 기존 그림이 그대로 나온다. */
+function imgOrSvg(file, svg, cls){
+  return `<span class="imgwrap ${cls||''}">
+    <img src="${file}" alt="" class="slotimg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <span class="slotsvg" style="display:none;">${svg}</span>
+  </span>`;
+}
+function evVisual(id){
+  const e=EVIDENCE[id];
+  return imgOrSvg('case3/'+id+'.png', ICON[e.icon], 'ev');
+}
+function avaVisual(susId){
+  return imgOrSvg('case3/'+susId+'.png', AVA[susId]||ICON.person, 'ava-img');
+}
+
+/* ── 증거(현장+자료) ── */
+const EVIDENCE = {
+  /* 현장 — 14층 이사장 집무실 */
+  victim:{ icon:'body', name:'추락한 한태규', sub:'Evidence · 14층 통창 아래',
+    text:`한태규가 14층 통창 아래로 떨어져 숨졌다. 검시 소견 — <b>11월 17일</b> 밤 11시 전후 사망. 외상은 추락에 의한 것뿐이나, 손에 <b>낡은 소형 녹음기</b> 하나를 꼭 쥐고 있었다. 그의 물건으로 보기엔 너무 오래됐다.`,
+    obs:`한태규는 11월 17일 밤, 14층에서 추락사. 손에 오래된 소형 녹음기를 쥐고 있었다 — 그의 것으로 보기엔 낡았다.` },
+  window:{ icon:'window', name:'열린 통창', sub:'Evidence · 집무실',
+    text:`집무실 통창이 활짝 열려 있다. 투신 정황. 그런데 <b>창 손잡이에서 한태규의 지문이 나오지 않았다.</b> 다른 사람의 것도 닦여 없다.`,
+    obs:`통창은 열려 있지만, 손잡이에 한태규의 지문이 없다. 스스로 연 흔적이 아니다.` },
+  desk:{ icon:'will', name:'책상 위 유서', sub:'Evidence · 집무실 책상',
+    text:`책상에 유서 한 장. <b>"모든 책임은 나에게 있다"</b>는 짧은 자백. 유서는 <b>타이핑된 인쇄물</b>이다. 책상 위엔 결재판과 만년필이 평소처럼 놓여 있다.`,
+    obs:`유서는 타이핑된 인쇄물이다. 책상엔 결재판과 만년필이 평소처럼 놓여 있었다.` },
+  pills:{ icon:'pills', name:'책상 위 약통', sub:'Evidence · 집무실 책상',
+    text:`책상 한쪽에 <b>혈압약 약통과 물컵.</b> 그날 저녁 분량이 비어 있다 — 죽기 직전 약을 챙겨 먹은 흔적이다.`,
+    obs:`한태규는 죽기 직전 그날 저녁 혈압약을 챙겨 먹었다.` },
+  pen:{ icon:'will', name:'한태규의 만년필 습관', sub:'Clue · 윤지선 증언',
+    text:`윤지선의 증언 — 한태규는 <b>평생 만년필 손글씨만 고집했다.</b> 결재든 메모든 전부 손으로. 타이핑한 글을 남길 사람이 아니다.`,
+    obs:`한태규는 평생 만년필 손글씨만 썼다. 타이핑된 유서는 그가 쓴 것이 아니다.` },
+  /* 자료 — 기록 */
+  autopsy:{ icon:'forensic', name:'부검·건강 기록', sub:'Record · 검안의',
+    text:`정밀 부검. 외상은 추락에 의한 것뿐. 주치의 소견엔 <b>한태규가 평소 고혈압으로 약을 꾸준히 복용해 왔다</b>고 적혀 있다. 건강을 챙기던 사람이었다.`,
+    obs:`한태규는 평소 고혈압으로 약을 꾸준히 복용하며 건강을 챙기던 사람이었다.` },
+  access:{ icon:'patrol', name:'출입 기록', sub:'Record · 보안실',
+    text:`그 시각 14층 정식 출입 기록은 없다. 그러나 <b>점검용 계단과 화물 동선은 기록에 남지 않으며,</b> 일부 구간 CCTV에는 <b>공백</b>이 있다. 사실상 사옥 안 사람이라면 누구든 오를 수 있었다.`,
+    obs:`출입 기록상 그 시각 14층은 비어 있지만, 기록에 안 남는 동선이 많다 — 사옥 안 누구든 가능했다.` },
+  keylog:{ icon:'patrol', name:'14층 카드키 로그', sub:'Record · 보안 단말',
+    text:`출입기록상 그 시각 14층은 사실상 누구나 오를 수 있었다. 정식 카드키로 단말을 찍은 그날의 기록은 이렇다.<br><br><span style="font-size:12px;color:#7e8aa0;line-height:1.9;display:block">· 09:12  14F 출입 — 한태규<br>· 11:40  14F 출입 — 윤지선<br>· 14:05  14F 출입 — 서영록<br>· 16:30  14F 출입 — 윤지선<br>· 22:50  14F 출입 — 민유현</span>`,
+    obs:`그날 14층 출입 로그. 낮 시간대 출입들 사이에, 밤 22:50 — 사망 직전에 찍힌 기록이 하나 있다.` },
+  scrap:{ icon:'affair', name:'낡은 스크랩 묶음', sub:'Record · 한태규 서랍',
+    text:`한태규가 모아둔 빛바랜 신문·사내보 묶음. 재단 표창, 신축 병동 준공, 의료봉사 기사 따위가 두툼하게 모여 있다. 오래된 사회면 한 장도 섞여 있는데, 잉크가 바래 잘 읽히지 않는다.`,
+    obs:`한태규는 재단 관련 기사를 오래 스크랩해 왔다. 그 사이에 빛바랜 옛 사회면 한 장이 섞여 있다.` },
+  dispute:{ icon:'debt', name:'재단 부지 분쟁 기록', sub:'Record · 법무팀',
+    text:`윤성그룹 <b>서영록 부회장</b>과 재단 사이에 <b>부지 매입가를 둘러싼 거액 소송</b>이 진행 중이었다. 최근 한태규와 직접 통화로 심하게 다퉜다는 메모도 있다.`,
+    obs:`서영록 부회장은 재단 부지값으로 한태규와 거액 분쟁 중이었다 — 또렷한 갈등.` },
+  donation:{ icon:'debt', name:'익명 후원 기록', sub:'Record · 재단 회계',
+    text:`한태규가 <b>12년간 매달 같은 액수</b>를 한 유가족 앞으로 익명 송금해 왔다. 그런데 그 돈은 <b>한 번도 수령되지 않은 채</b> 반송되어 쌓여 있었다.`,
+    obs:`한태규는 12년간 한 유가족에게 매달 익명 송금했지만, 그 돈은 한 번도 수령되지 않았다.` },
+  calendar:{ icon:'will', name:'유현의 탁상 캘린더', sub:'Record · 기획조정실',
+    text:`유현의 책상에 놓인 탁상 캘린더. 업무 일정이 빼곡하다. 그 사이, 어느 하루에만 <b>아무 말 없이 동그라미</b> 하나가 쳐져 있다.`,
+    obs:`유현의 캘린더에는, 일정 없이 동그라미만 쳐진 날이 하루 있다.` },
+  yj_lead:{ icon:'affair', name:'비서실장 관련 메모', sub:'Record · 탐문',
+    text:`윤지선은 그날 밤 <b>늦게까지 사옥에 남아 결재 서류를 처리</b>했다. 며칠 전 한태규와 언성을 높이는 걸 봤다는 직원의 진술도 있다.`,
+    obs:`윤지선은 그날 밤 사옥에 늦게까지 있었고, 한태규와 다툰 적이 있다는 정황이 있다.` },
+  sy_lead:{ icon:'debt', name:'부회장 관련 메모', sub:'Record · 탐문',
+    text:`서영록은 사건 며칠 전 재단에 직접 찾아와 <b>부지 계약 문제로 언성을 높였다.</b> 다만 그날 저녁엔 그룹 행사장에 있었던 것으로 보인다.`,
+    obs:`서영록은 부지 문제로 한태규와 갈등했지만, 그날 저녁은 행사장에 있었던 정황이다.` },
+};
+const SCENE_EV = ['victim','window','desk','pills'];
+const REC_EV   = ['autopsy','access','scrap','dispute','keylog','calendar','yj_lead','sy_lead'];
+
+/* ── 용의자 / 진술(1차 stage0 + 균열 stage1) ── */
+const SUS = [
+  { id:'ts', name:'오태식', role:'사옥 보안팀장 · 48세' },
+  { id:'sy', name:'서영록', role:'윤성그룹 부회장 · 57세' },
+  { id:'dg', name:'유현', role:'재단 기획조정실장 · 25세' },
+  { id:'yj', name:'윤지선', role:'이사장 비서실장 · 29세' },
+];
+const STMT = {
+  dg:[
+    { id:'dg_role', stage:0, q:'맡은 일',        said:'"재단 기획을 총괄합니다. 이사장님 일정과 대외 사업도 제가 가까이서 챙겼고요."',
+      note:'유현 실장: 재단 기획조정 총괄, 이사장 곁에서 일정·사업을 챙김.' },
+    { id:'dg_night', stage:0, q:'그날 밤',        said:'"어제는 개인적인 일이 있어 연차를 냈었습니다. 회사엔 나오지 않았어요. 이사장님 일은… 오늘 아침에야 들었습니다."',
+      note:'유현 실장: 어제(사건 당일)는 연차를 내고 회사에 나오지 않았다고 진술. 사건은 아침에 알았다고 함.' },
+    { id:'dg_rel',  stage:0, q:'이사장과의 관계', said:'"이사장님껜 많이 배웠습니다. 갑작스러워서, 아직 실감이 안 나네요."',
+      note:'유현 실장: 이사장에게 배운 게 많다며 담담하게 애도를 표함.' },
+    { id:'dg_care', stage:0, q:'이사장의 건강',   said:'"이사장님요? 혈압이 좀 있으셔서, <b>매일 저녁 약을 거르지 않고 챙겨 드셨어요.</b> 제가 옆에서 늘 챙겨드렸고요. 그렇게 건강 챙기시던 분이…"',
+      note:'유현 실장: 한태규가 고혈압으로 매일 저녁 약을 거르지 않았고, 유현이 곁에서 챙겼다고 진술.' },
+    { id:'dg_re',   stage:1, q:'(14층 카드키 로그를 들이대며) 연차였다면서', said:'"…그게, 잠깐 두고 간 물건을 가지러… 들렀습니다. 잠깐이었어요. …네, 연차였죠. 그래도 그게… 뭐 문제 될 건 없잖습니까."',
+      note:'유현 실장: 연차라 회사에 안 나왔다더니, 카드 로그엔 그날 밤 22:50 14층 출입이 찍혀 있다. 추궁하자 "물건 가지러 잠깐"이라 말을 바꿨다.', unlockedBy:['keylog'] },
+  ],
+  ts:[
+    { id:'ts_role', stage:0, q:'맡은 일',        said:'"사옥 보안하고 CCTV 관제를 맡고 있습니다. 야간엔 제가 당직이었고요."',
+      note:'오태식 팀장: 사옥 보안·CCTV 관제 담당, 그날 야간 당직.' },
+    { id:'ts_night', stage:0, q:'그날 밤',        said:'"관제실에 있었습니다. 별일 없었어요. …14층요? 거긴 따로 챙길 일 없었는데."',
+      note:'오태식 팀장: 관제실에 있었고 특이사항 없었다고 진술.' },
+    { id:'ts_cctv', stage:0, q:'CCTV는 정상이었나', said:'"뭐… 늘 그렇듯 돌아갔죠. 가끔 끊기긴 하는데, 장비가 오래돼서요."',
+      note:'오태식 팀장: CCTV는 정상이었다지만, 가끔 끊긴다고 함.' },
+    { id:'ts_re',   stage:1, q:'(출입 기록·CCTV 공백을 들이대며) 그 시각', said:'"…그 시간 관제실 비운 거요? 담배… 잠깐 피우러 나갔습니다. 통화도 좀 했고. 그게 답니다. 진짭니다."',
+      note:'오태식 팀장: 사건 시각 관제실을 비운 건 흡연·통화 때문이라고 해명. (확인 시 사실)', unlockedBy:['access'] },
+  ],
+  sy:[
+    { id:'sy_role', stage:0, q:'한태규와의 관계', said:'"사업상 알고 지냈습니다. 재단 부지 건으로 협의가 좀 있었고요."',
+      note:'서영록 부회장: 재단 부지 건으로 한태규와 협의 관계.' },
+    { id:'sy_night', stage:0, q:'그날 밤',        said:'"그날 저녁엔 그룹 행사가 있었습니다. 사람이 많았으니, 본 사람도 많을 겁니다."',
+      note:'서영록 부회장: 그날 저녁 그룹 행사 참석, 목격자 다수(알리바이).' },
+    { id:'sy_re',   stage:1, q:'(부지 분쟁 기록을 들이대며) 갈등', said:'"…돈 문제로 얼굴 붉힌 건 맞습니다. 부지값이 컸으니까요. 하지만 그 시간 저는 그룹 행사장에 있었고, 그건 사진으로도 남습니다."',
+      note:'서영록 부회장: 부지값 분쟁을 인정. 그러나 사건 시각 행사장 알리바이가 사진으로 확인됨 — 범행 불가.', unlockedBy:['dispute'] },
+  ],
+  yj:[
+    { id:'yj_role', stage:0, q:'맡은 일',        said:'"이사장님 비서실장입니다. 일정부터 사적인 심부름까지, 가장 가까이서 모셨죠."',
+      note:'윤지선 실장: 이사장 비서실장, 가장 가까이서 보좌.' },
+    { id:'yj_night', stage:0, q:'그날 밤',        said:'"저도 사옥에 늦게까지 있었어요. 결재 마무리가 남아서요. …네, 알아요. 그래서 제가 의심스럽겠죠."',
+      note:'윤지선 실장: 그날 밤 사옥에 늦게까지 있었음을 인정(의심받는 위치).' },
+    { id:'yj_secret', stage:0, q:'이사장과의 사이', said:'"…편하게 모신 사이는 아니었어요. 그분은 사람 약점을 쥐고 흔드는 데가 있었으니까."',
+      note:'윤지선 실장: 한태규가 약점을 쥐고 흔드는 사람이었다고 진술(원한 정황).' },
+    { id:'yj_pen', stage:0, q:'이사장의 습관', said:'"이사장님요? 그분은 뭐든 <b>만년필 자필로만</b> 쓰셨어요. 결재도, 메모도, 편지도. 컴퓨터로 글 쓰는 건 본 적이 없네요."',
+      note:'윤지선 실장: 한태규는 무엇이든 만년필 자필로만 썼다고 진술. 타이핑은 본 적 없다고 함.', reveals:'pen' },
+    { id:'yj_re',   stage:1, q:'(비서실장 관련 메모를 들이대며) 그날 밤', said:'"…네, 늦게까지 남아 결재를 처리한 건 맞아요. 그분과 언성을 높인 적도 있고요. 하지만 그뿐이에요. 제가… 그분을 어떻게 하겠어요."',
+      note:'윤지선 실장: 그날 밤 사옥에 남아 결재했고 한태규와 다툰 적이 있음을 인정. 그러나 범행은 부인.', unlockedBy:['yj_lead'] },
+  ],
+};
+const STMT_ALL = [].concat(...Object.values(STMT));
+const STAGE0_COUNT = STMT_ALL.filter(s=>s.stage===0).length;
+const CRACK_COUNT  = STMT_ALL.filter(s=>s.stage===1).length;
+function stmtById(id){ return STMT_ALL.find(s=>s.id===id); }
+function susOf(id){ return id.split('_')[0]; }
+
+/* ── 단서 노트 표시 ── */
+function noteName(id){
+  if(EVIDENCE[id]) return EVIDENCE[id].name;
+  const s=stmtById(id); if(!s) return id;
+  const su=SUS.find(x=>x.id===susOf(id));
+  return (su?su.name:'')+' · '+s.q.replace(/\(.*?\)\s*/,'')+(s.stage===1?' (균열)':' (진술)');
+}
+function noteIcon(id){
+  if(EVIDENCE[id]) return ICON[EVIDENCE[id].icon];
+  const su=susOf(id); return AVA[su]||ICON.person;
+}
+function noteDesc(id){
+  if(EVIDENCE[id]) return (EVIDENCE[id].sub.split('·')[1]||'').trim();
+  const s=stmtById(id); return s? s.note:'';
+}
+
+function contraKey(a,b){ return [a,b].sort().join('|'); }
+
+/* ════════════════════ 상태 ════════════════════ */
+const state = {
+  collected:new Set(),
+  notes:new Set(),
+  found:new Set(),
+  s1:new Set(), recRead:new Set(), evGain:new Set(),
+  stmtRead:new Set(), cracks:new Set(),
+  second:new Set(), contraSolved:false,
+  chances:3, vstep:'killer',
+  killPick1:[], killPick2:[], scopePick:null, accusePick:null, accChances:3,
+  pick:{ killer:null, evidence:[], trick:null },
+  noteSel:null,
+  reSel:null, reMsg:null, secMsg:null,
+};
+
+/* ════════════════════ 비 애니메이션 ════════════════════ */
+(function rain(){
+  const svg=document.getElementById('rain'); if(!svg) return; let s='';
+  const seed=[3,7,11,17,23,31,41,53,61,71,83,97,103,113,127,139,151,163,179,191];
+  for(let i=0;i<46;i++){
+    const x=(i*41+ (seed[i%seed.length])) % 480;
+    const len=(16+ (seed[i%seed.length]%4)*7);
+    const dur=(0.9+ (i%6)*0.28).toFixed(2);
+    const delay=(-(i%12)*0.5).toFixed(2);
+    const op=(0.10+ (i%4)*0.06).toFixed(2);
+    s+=`<line x1="${x}" y1="-${len}" x2="${x+5}" y2="0" stroke="var(--rain)" stroke-width="1.1" opacity="${op}">
+      <animateTransform attributeName="transform" type="translate" from="0 0" to="40 960" dur="${dur}s" begin="${delay}s" repeatCount="indefinite"/>
+    </line>`;
+  }
+  svg.innerHTML=s;
+})();
+
+/* ════════════════════ 인트로 ════════════════════ */
+function runIntro(){
+  const lines=[
+    "11월 17일, 밤.",
+    "○○의료재단 이사장 한태규가",
+    "자신의 사옥 14층에서 떨어졌다.",
+    "책상엔 유서가 한 장 놓여 있었다.",
+    "사람들은, 자살이라 했다.",
+    "그날 밤, 사옥엔 네 사람이 남아 있었다.",
+  ];
+  const box=document.getElementById('introLines');
+  const btn=document.getElementById('introBtn');
+  box.innerHTML=''; btn.style.opacity='0';
+  lines.forEach((ln,i)=>{
+    const p=document.createElement('div');
+    p.textContent=ln;
+    p.style.cssText='opacity:0; transform:translateY(8px); transition:opacity .7s, transform .7s;';
+    box.appendChild(p);
+    setTimeout(()=>{ p.style.opacity='1'; p.style.transform='none'; }, 500 + i*900);
+  });
+  setTimeout(()=>{ btn.style.opacity='1'; }, 600 + lines.length*900);
+}
+
+/* ════════════════════ 화면 전환 ════════════════════ */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  if(id==='intro') runIntro();
+  if(id==='s4log') buildLog();
+  if(id==='kill') buildKill();
+  if(id==='scope') buildScope();
+  if(id==='p3past') buildPast();
+  if(id==='p4match') buildMatch();
+  if(id==='p4click') runClick();
+  if(id==='p6final') buildFinal();
+  if(id==='p7end') runEnd();
+  if(id==='accuse') buildAccuse();
+  if(id==='mono2') runMono2();
+  document.getElementById(id).classList.add('active');
+  const b=document.getElementById(id).querySelector('.body'); if(b) b.scrollTop=0;
+  window.scrollTo(0,0);
+  document.getElementById('noteFab').style.display = (state.notes.size>0 && id!=='menu' && id!=='intro') ? 'flex':'none';
+  if(id==='s4') updateLockUI();
+}
+
+/* ════════════════════ 토스트 ════════════════════ */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1900);
+}
+
+/* ════════════════════ 노트 추가 ════════════════════ */
+function addNote(id){
+  const fresh=!state.notes.has(id);
+  state.notes.add(id);
+  document.getElementById('noteCnt').textContent=state.notes.size;
+  document.getElementById('noteFab').style.display='flex';
+  if(fresh) toast('단서 노트에 추가됨');
+}
+
+/* ════════════════════ S1 현장 SVG ════════════════════ */
+function buildScene(){
+  const wrap=document.getElementById('sceneArt');
+  wrap.innerHTML=`
+  <img src="case3/scene.png" alt="" class="scenebg" onerror="this.style.display='none';" onload="this.closest('.scene-wrap').classList.add('has-bg');">
+  <svg viewBox="0 0 480 360">
+    <!-- 배경: 14층 집무실(누아르) -->
+    <rect class="bgfill" x="0" y="0" width="480" height="360" fill="#0a0d12"/>
+    <rect class="bgfill" x="0" y="250" width="480" height="110" fill="#10141b"/>
+    <g class="scene-prop">
+    <!-- 통창(오른쪽, 야경) -->
+    <rect x="288" y="36" width="160" height="220" rx="2" fill="#0c1320" stroke="#222a35" stroke-width="2"/>
+    <line x1="368" y1="36" x2="368" y2="256" stroke="#222a35" stroke-width="2"/>
+    <g opacity=".45">
+      <rect x="300" y="70" width="6" height="10" fill="#cdb56b"/>
+      <rect x="320" y="58" width="5" height="14" fill="#9aa9c4"/>
+      <rect x="392" y="64" width="6" height="12" fill="#cdb56b"/>
+      <rect x="416" y="80" width="5" height="16" fill="#7e8aa0"/>
+      <rect x="340" y="120" width="5" height="10" fill="#9aa9c4"/>
+      <rect x="404" y="130" width="6" height="10" fill="#cdb56b"/>
+    </g>
+    <!-- 열린 창틈(왼쪽 패널 살짝 어긋남) -->
+    <line x1="288" y1="36" x2="288" y2="256" stroke="#3a4658" stroke-width="3" opacity=".7"/>
+
+    <!-- 책상(가운데) -->
+    <rect x="120" y="232" width="190" height="20" rx="2" fill="#1a1f28" stroke="#2a313d" stroke-width="1.5"/>
+    <rect x="134" y="252" width="14" height="60" fill="#15191f"/>
+    <rect x="282" y="252" width="14" height="60" fill="#15191f"/>
+    <!-- 책상 위 유서 한 장 + 만년필 -->
+    <rect x="150" y="224" width="34" height="22" rx="1" fill="#cdd1d8" opacity=".85" transform="rotate(-4 150 224)"/>
+    <line x1="246" y1="226" x2="270" y2="222" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/>
+    <line x1="250" y1="232" x2="274" y2="228" stroke="#9aa3b0" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 책상 위 약통 + 물컵 -->
+    <rect x="206" y="216" width="13" height="18" rx="2" fill="#1a1f28" stroke="#3a424e" stroke-width="1.2"/>
+    <rect x="205" y="212" width="15" height="5" rx="1" fill="#2a313d"/>
+    <ellipse cx="228" cy="232" rx="6" ry="3" fill="#222a35" opacity=".7"/>
+
+    <!-- 의자(넘어가지 않은, 가지런) -->
+    <rect x="190" y="262" width="46" height="8" rx="2" fill="#161b22"/>
+    <rect x="190" y="270" width="8" height="40" fill="#161b22"/>
+    <rect x="228" y="270" width="8" height="40" fill="#161b22"/>
+
+    <!-- 통창 아래 바닥 — 추락 지점 표식 -->
+    <g opacity=".8">
+      <ellipse cx="372" cy="316" rx="40" ry="13" fill="#2a1010" opacity=".45"/>
+      <path d="M352 316 q20 -10 40 0 q-4 8 -20 8 q-16 0 -20 -8z" fill="none" stroke="#9b3b3b" stroke-width="1.4" stroke-dasharray="3 3"/>
+    </g>
+    </g>
+    <!-- 핫스팟 -->
+    ${hotspotSVG('window', 360, 130)}
+    ${hotspotSVG('desk',   170, 232)}
+    ${hotspotSVG('pills',  212, 220)}
+    ${hotspotSVG('victim', 372, 314)}
+  </svg>`;
+  SCENE_EV.forEach(id=>{
+    wrap.querySelector(`#hs_${id}`).addEventListener('click',()=>openEvidence(id,'s1'));
+  });
+  refreshScene();
+}
+function hotspotSVG(id,x,y){
+  return `<g class="hotspot" id="hs_${id}">
+    <circle class="ring" cx="${x}" cy="${y}" r="13"/>
+    <circle class="dot" cx="${x}" cy="${y}" r="3.5"/>
+    <circle class="hit" cx="${x}" cy="${y}" r="24"/>
+  </g>`;
+}
+function refreshScene(){
+  SCENE_EV.forEach(id=>{
+    const g=document.getElementById('hs_'+id);
+    if(g) g.classList.toggle('done', state.s1.has(id));
+  });
+  const done=state.s1.size>=SCENE_EV.length;
+  document.getElementById('s1count').textContent = done ? '현장 조사 완료' : `조사한 지점 ${state.s1.size} / ${SCENE_EV.length}`;
+  document.getElementById('s1next').disabled=!done;
+}
+
+/* ════════════════════ 증거 모달 ════════════════════ */
+function openEvidence(id, scene){
+  const e=EVIDENCE[id];
+  let txt=e.text, obs=e.obs;
+  // 스크랩: P2에서 신문을 찾은 뒤엔 그 기사 내용까지 함께 보이게
+  if(id==='scrap' && state.scrapFound){
+    txt = e.text + `<div class="news-clip" style="margin-top:14px;">
+      <div class="news-h">○○병원 간병인 민모 씨, 별관서 추락사</div>
+      <div class="news-b">병원 측은 "환자 관리 소홀에 대한 책임을 비관한 것으로 보인다"고 발표했고, 경찰은 사고로 종결했다.</div>
+      <div class="news-date">— 12년 전 · <b>11월 17일</b></div>
+    </div>`;
+    obs = `12년 전 11월 17일, 간병인 <b>민모 씨</b>가 별관에서 추락사했다.`;
+  }
+  document.getElementById('evModalInner').innerHTML=`
+    <div class="m-ic">${evVisual(id)}</div>
+    <h3>${e.name}</h3>
+    <div class="m-sub">${e.sub}</div>
+    <div class="m-txt">${txt}</div>
+    <div class="obs"><span class="lab">관찰</span>${obs}</div>
+    <button class="btn primary close" onclick="closeModal()">닫기</button>`;
+  document.getElementById('evModal').classList.add('show');
+  state.collected.add(id);
+  addNote(id);
+  if(scene==='s1'){ state.s1.add(id); refreshScene(); }
+  if(scene==='s2'){ state.recRead.add(id); refreshRec(); }
+  if(scene==='s4ev'){ state.evGain.add(id); refreshEvGain(); }
+}
+function closeModal(){ document.getElementById('evModal').classList.remove('show'); state.reSel=null; state.reMsg=null; }
+
+/* ════════════════════ S2 자료 ════════════════════ */
+function buildRec(){
+  const g=document.getElementById('recGrid');
+  g.innerHTML=REC_EV.map(id=>{
+    const e=EVIDENCE[id];
+    return `<div class="card" id="rc_${id}" onclick="openEvidence('${id}','s2')">
+      <span class="checkmark">✓</span>
+      <div class="ic">${evVisual(id)}</div>
+      <div class="nm">${e.name}</div>
+      <div class="st">미검토</div>
+    </div>`;
+  }).join('');
+  refreshRec();
+}
+function refreshRec(){
+  REC_EV.forEach(id=>{
+    const c=document.getElementById('rc_'+id);
+    if(c && state.recRead.has(id)){ c.classList.add('done'); c.querySelector('.st').textContent='검토 완료'; }
+  });
+  document.getElementById('s2next').disabled = state.recRead.size<REC_EV.length;
+}
+
+/* ════════════════════ S3 심문(1차) ════════════════════ */
+function buildInterro(){
+  const el=document.getElementById('interroList');
+  el.innerHTML=SUS.map(su=>{
+    const s0=STMT[su.id].filter(s=>s.stage===0);
+    return `<div class="sus-block">
+      <div class="person">
+        <div class="ava">${avaVisual(su.id)}</div>
+        <div><div class="nm">${su.name}</div><div class="rl">${su.role}</div></div>
+      </div>
+      ${s0.map(s=>`
+        <div class="stmt" id="st_${s.id}">
+          <div class="q" onclick="toggleStmt('${s.id}')">
+            <span class="lbl">${s.q}</span><span class="chev">›</span>
+          </div>
+          <div class="a"><div class="a-in"><span class="said">${s.said}</span></div></div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  checkStmtGate();
+}
+function toggleStmt(id){
+  const box=document.getElementById('st_'+id);
+  const a=box.querySelector('.a');
+  const open=box.classList.toggle('open');
+  a.style.maxHeight = open ? a.scrollHeight+'px' : '0';
+  if(open && !box.classList.contains('read')){
+    box.classList.add('read');
+    state.stmtRead.add(id);
+    addNote(id);
+    const st=STMT_ALL.find(x=>x.id===id);
+    if(st && st.reveals && !state.collected.has(st.reveals)){
+      state.collected.add(st.reveals); addNote(st.reveals);
+      setTimeout(()=>toast('단서 확보 — 한태규는 만년필 자필로만 썼다'), 500);
+    }
+    checkStmtGate();
+  }
+}
+function checkStmtGate(){
+  document.getElementById('s3next').disabled = state.stmtRead.size<STAGE0_COUNT;
+}
+
+/* ════════════════════ S4 재추궁(들이대기) ════════════════════ */
+function buildRe(){
+  const el=document.getElementById('reList');
+  el.innerHTML=SUS.map(su=>{
+    const crack=STMT[su.id].find(s=>s.stage===1);
+    const done=crack && state.cracks.has(crack.id);
+    return `<div class="person clk" onclick="openReinterro('${su.id}')">
+      <div class="ava">${avaVisual(su.id)}</div>
+      <div><div class="nm">${su.name}</div><div class="rl">${su.role}</div></div>
+      <div class="badge ${done?'ok':''}">${done?'균열 진술 확보':'증거 들이대기 ›'}</div>
+    </div>`;
+  }).join('');
+  updateLockUI();
+}
+function openReinterro(sid){
+  state.reSel=sid; state.reMsg=null;
+  renderReinterro();
+  document.getElementById('evModal').classList.add('show');
+}
+function renderReinterro(){
+  const sid=state.reSel; const su=SUS.find(x=>x.id===sid);
+  const crack=STMT[sid].find(s=>s.stage===1);
+  const unlocked=crack && state.cracks.has(crack.id);
+  const s0=STMT[sid].filter(s=>s.stage===0);
+  const ev=[...state.collected];
+  document.getElementById('evModalInner').innerHTML=`
+    <div class="person" style="margin-bottom:14px;">
+      <div class="ava">${avaVisual(sid)}</div>
+      <div><div class="nm">${su.name}</div><div class="rl">${su.role}</div></div>
+    </div>
+    <div class="re-flat">${s0[0].said}</div>
+    ${unlocked
+      ? `<div class="re-said"><span class="who">${su.name} · 균열</span>${crack.said}</div>`
+      : (state.reMsg ? state.reMsg : '')}
+    ${unlocked ? '' : `
+      <div class="press-hd">들이댈 증거를 고르라.</div>
+      <div class="press-grid">
+        ${ev.map(id=>`<div class="press-chip" onclick="pressEvidence('${id}')">
+          <div class="pi">${evVisual(id)}</div><span>${EVIDENCE[id].name}</span>
+        </div>`).join('')}
+      </div>`}
+    <button class="btn primary close" onclick="closeModal()" style="margin-top:18px;">닫기</button>`;
+}
+function pressEvidence(eid){
+  const sid=state.reSel;
+  const crack=STMT[sid].find(s=>s.stage===1);
+  if(crack && crack.unlockedBy.includes(eid)){
+    if(!state.cracks.has(crack.id)){
+      state.cracks.add(crack.id);
+      addNote(crack.id);
+      if(state.cracks.size>=CRACK_COUNT) toast('네 사람의 균열 진술을 모두 확보했다');
+      else toast('진술이 흔들렸다 — 균열 진술 확보');
+    }
+    state.reMsg=null;
+  } else {
+    const su=SUS.find(x=>x.id===sid);
+    state.reMsg=`<div class="re-flat">${su.name}은(는) 그 증거엔 별다른 반응이 없다. "…그게 저랑 무슨 상관이죠?"</div>`;
+  }
+  renderReinterro();
+  updateLockUI();
+}
+/* 종결 잠금: 균열 4/4 + 핵심 모순 3/3 */
+function updateLockUI(){
+  const crackN=state.cracks.size;
+  const ready = crackN>=CRACK_COUNT;
+  const bar=document.getElementById('lockBar');
+  if(bar){
+    bar.innerHTML=`
+      <div class="lock-row"><span>확보한 균열 진술</span><b class="${ready?'ok':''}">${crackN} / ${CRACK_COUNT}</b></div>
+      <div class="lock-tip ${ready?'ready':''}">${ready
+        ? '네 사람 모두 흔들렸다. 사건 일지를 정리할 수 있다.'
+        : '아직 입을 다문 사람이 있다. 인물에게 <b>맞는 증거를 들이대</b> 네 사람 모두에게서 균열 진술을 끌어내라.'}</div>`;
+  }
+  const btn=document.getElementById('s4next'); if(btn) btn.disabled=!ready;
+}
+
+/* ════════════════════ 단서 노트 / 대조 ════════════════════ */
+function openNotes(){ state.noteSel=null; renderNotes(); document.getElementById('noteModal').classList.add('show'); }
+function closeNotes(){ document.getElementById('noteModal').classList.remove('show'); }
+function renderNotes(){
+  const inner=document.getElementById('noteModalInner');
+  const ids=[...state.notes];
+  inner.innerHTML=`
+    <h3 style="margin-bottom:2px;">단서 노트</h3>
+    <div class="compare-hd">지금까지 확보한 단서와 증언이다. 언제든 다시 읽어라.</div>
+    <div class="note-list">${ids.map(id=>`
+      <div class="nrow">
+        <div class="ni">${noteIcon(id)}</div>
+        <div class="ntx"><div class="nn">${noteName(id)}</div><div class="nd">${noteDesc(id)}</div></div>
+      </div>`).join('')}</div>
+    <button class="btn ghost close" onclick="closeNotes()" style="margin-top:14px;">닫기</button>`;
+}
+
+/* ════════════════════ S4LOG 사건 일지 ════════════════════ */
+const LOG_ROWS = [
+  { t:'저녁 8:00', d:'서영록 부회장이 부지 건으로 한태규와 통화로 언쟁. 이후 그룹 행사에 참석한다. (다수 목격)' },
+  { t:'밤 9:30', d:'한태규는 14층 집무실에 늦게까지 남는다. <b>저녁 혈압약을 복용.</b>' },
+  { t:'밤 10:00 ~ 11:00', d:'사옥엔 윤지선·유현·오태식 등 일부 인원이 남아 있었다. 정식 출입기록 밖 동선이 많다.' },
+  { t:'11/17 밤 11:00', d:'한태규가 14층 통창 아래로 추락. <b>사망 추정 시각.</b>' },
+  { t:'밤 11:00 이후', d:'책상엔 <b>타이핑된 유서.</b> 통창은 열려 있고, 손잡이엔 지문이 없다.' },
+  { t:'이튿날 아침', d:'출근 인원이 사옥 아래에서 한태규의 시신을 발견한다.' },
+];
+function buildLog(){
+  const tl=document.getElementById('logTimeline');
+  if(tl) tl.innerHTML=LOG_ROWS.map(r=>`
+    <div class="tl-row">
+      <div class="tl-dot"></div>
+      <div class="tl-time">${r.t}</div>
+      <div class="tl-desc">${r.d}</div>
+    </div>`).join('');
+  const key=document.getElementById('logKey');
+  if(key) key.innerHTML=`<b>타이핑된 유서, 지문 없는 통창, 그리고 죽기 직전 삼킨 약.</b> 자살이라기엔, 어긋나는 자리가 너무 많다.`;
+}
+
+/* ════════════════════ KILL 타살 확정 (모순 2쌍) ════════════════════ */
+const KILL_P1 = ['desk','pen'];      // 유서는 그가 안 썼다
+const KILL_P2 = ['autopsy','pills']; // 죽을 생각이 없었다
+function buildKill(){
+  const ev=[...state.collected];
+  const render=(boxId,picks)=>{
+    document.getElementById(boxId).innerHTML=ev.map(id=>`
+      <div class="opt ${picks.includes(id)?'sel':''}" onclick="toggleKill('${boxId}','${id}')">
+        <span class="rdo"></span><span>${EVIDENCE[id].name}</span>
+      </div>`).join('');
+  };
+  state.killPick1=state.killPick1||[]; state.killPick2=state.killPick2||[];
+  render('killOpts1', state.killPick1);
+  render('killOpts2', state.killPick2);
+  document.getElementById('killSubmit').disabled = !(state.killPick1.length===2 && state.killPick2.length===2);
+}
+function toggleKill(boxId,id){
+  const a = boxId==='killOpts1' ? state.killPick1 : state.killPick2;
+  const i=a.indexOf(id);
+  if(i>=0) a.splice(i,1); else { if(a.length>=2) a.shift(); a.push(id); }
+  buildKill();
+}
+function submitKill(){
+  const ok1=[...state.killPick1].sort().join(',')===[...KILL_P1].sort().join(',');
+  const ok2=[...state.killPick2].sort().join(',')===[...KILL_P2].sort().join(',');
+  const fb=document.getElementById('killFb');
+  if(ok1&&ok2){
+    fb.className='contra-fb ok';
+    fb.innerHTML=`<b>두 모순이 한 곳을 가리킨다.</b> 손글씨만 쓰던 사람의 타이핑 유서 — 누군가 대신 썼다. 혈압약을 꼬박 챙기던 사람이 그날도 약을 먹었다 — 죽을 생각이 없었다. <b>한태규는 살해당했다.</b>`;
+    setTimeout(()=>go('scope'), 1100);
+  } else {
+    fb.className='contra-fb no';
+    let hint = !ok1 && !ok2 ? '두 쌍 모두 아직 어긋난다.'
+            : !ok1 ? '①이 어긋난다. 그가 결코 남기지 않았을 글의 형태와, 그 형태를 부정하는 그의 평생 습관을 짝지어라.'
+            : '②가 어긋난다. 죽기로 한 사람이라면 하지 않았을 행동과, 그것을 뒷받침하는 그의 평소 상태를 짝지어라.';
+    fb.innerHTML=`${hint} <span style="color:var(--muted)">다시 짚어라.</span>`;
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+/* ════════════════════ SCOPE 내부자 확정 (킥) ════════════════════ */
+function buildScope(){
+  const ev=[...state.collected];
+  document.getElementById('scopeOpts').innerHTML=ev.map(id=>`
+    <div class="opt ${state.scopePick===id?'sel':''}" onclick="pickScope('${id}')">
+      <span class="rdo"></span><span>${EVIDENCE[id].name}</span>
+    </div>`).join('');
+  document.getElementById('scopeSubmit').disabled=!state.scopePick;
+}
+function pickScope(id){ state.scopePick=id; buildScope(); }
+function submitScope(){
+  const fb=document.getElementById('scopeFb');
+  if(state.scopePick==='window'){
+    fb.className='contra-fb ok';
+    fb.innerHTML=`<b>안의 사람이다.</b> 통창은 안에서만 열리는 구조인데, 손잡이엔 한태규의 지문조차 없다 — 누군가 닦아낸 것이다. 밖에서 든 자가 아니라, <b>사옥 안의 누군가</b>가 그를 떨어뜨렸다.`;
+    setTimeout(()=>go('accuse'), 1100);
+  } else {
+    fb.className='contra-fb no';
+    fb.innerHTML=`그건 '안의 사람'을 가리키지 못한다. 외부의 침입이라면 남았을 흔적, 혹은 남지 않았어야 할 흔적을 떠올려라. <span style="color:var(--muted)">다시 골라라.</span>`;
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+/* ════════════════════ ACCUSE 범인 지목 ════════════════════ */
+const OPT_PEOPLE3 = [
+  { id:'sy', name:'서영록', role:'윤성그룹 부회장 · 57세' },
+  { id:'yj', name:'윤지선', role:'이사장 비서실장 · 29세' },
+  { id:'ts', name:'오태식', role:'사옥 보안팀장 · 48세' },
+  { id:'dg', name:'유현', role:'재단 기획조정실장 · 25세' },
+  { id:'intruder', name:'외부 침입자', role:'신원 미상' },
+  { id:'accident', name:'사고·자살', role:'타살이 아니다' },
+];
+function buildAccuse(){
+  const sb=document.getElementById('accSubmit'); if(sb) sb.style.display='';
+  const rj=document.getElementById('accReject');
+  if(rj && state.accusePick!=='dg') rj.innerHTML='';
+  renderAccChances();
+  document.getElementById('accuseOpts').innerHTML=OPT_PEOPLE3.map(p=>`
+    <div class="opt ${state.accusePick===p.id?'sel':''}" onclick="pickAccuse('${p.id}')">
+      <span class="rdo"></span>
+      <span><b style="font-weight:600">${p.name}</b> <span style="color:var(--muted); font-size:12.5px">· ${p.role}</span></span>
+    </div>`).join('');
+  document.getElementById('accSubmit').disabled=!state.accusePick;
+}
+function renderAccChances(){
+  const box=document.getElementById('accChanceBox'); if(!box) return;
+  let d=''; for(let i=0;i<3;i++) d+=`<span class="cdot ${i<state.accChances?'on':''}"></span>`;
+  box.innerHTML=`<span class="ch-lab">남은 기회</span> ${d}`;
+}
+function pickAccuse(id){ state.accusePick=id; buildAccuse(); }
+function submitAccuse(){
+  if(state.accusePick==='dg'){
+    const box=document.getElementById('accReject');
+    box.innerHTML=`<div class="reject ok"><div class="rt" style="color:var(--good)">▶ 들어맞는다</div><div class="rh">유현은 그날 <b>"연차를 내고 회사에 나오지 않았다"</b>고 했다.<br><br>그러나 카드 단말엔 — <b style="color:#e8b4b4">그날 밤 10시 50분, 14층 출입.</b> 사망 직전, 한밤이다. 연차였다는 사람이, 그 시각 그 자리에 있었다.<br><br>그는 거기 있었고, 그것을 숨겼다. — <b>민유현이다.</b></div><button class="btn primary" style="margin-top:16px; width:100%;" onclick="go('mono2')">사건을, 닫는다 →</button></div>`;
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('accSubmit').style.display='none';
+    return;
+  }
+  state.accChances--; renderAccChances();
+  const fbmap={
+    sy:'서영록은 그 시각 그룹 행사장에 있었다. 사진까지 남은 알리바이 — 그가 14층에 있었을 수 없다.',
+    yj:'윤지선에겐 동기가 있었지만, 타이핑 유서가 가짜임을 스스로 폭로한 사람이다. 범인이라면 굳이 자기 위장을 무너뜨릴 리 없다.',
+    ts:'오태식의 자리 비움은 흡연·통화로 확인됐고, 동선상 14층과 엮을 고리가 없다.',
+    intruder:'출입과 정황 모두 사옥 안 사람의 소행을 가리킨다. 외부인의 흔적은 어디에도 없다.',
+    accident:'타이핑된 유서가 그것을 부순다. 누군가 그의 죽음을 자살로 꾸몄다 — 사고도, 자살도 아니다.',
+  };
+  const box=document.getElementById('accReject');
+  const extra = state.accChances<=0 ? ' <b>연차라 안 나왔다면서, 그날 밤 22:50에 14층 카드를 찍은 사람이 있다.</b>' : '';
+  box.innerHTML=`<div class="reject"><div class="rt">⚠ 어긋난다 · 남은 기회 ${Math.max(state.accChances,0)}</div><div class="rh">${fbmap[state.accusePick]||''}${extra}</div></div>`;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  if(state.accChances<=0){ state.accChances=3; renderAccChances(); }
+  toast('어긋났다');
+}
+
+/* ════════════════════ 2부 P1 — 녹음기 ════════════════════ */
+/* ════════════════════ 2부 P6 — 결정적 증거(기일) ════════════════════ */
+// 모은 증거에서 직접 찾아 맞댄다. 정답 = 두 증거에 박힌 같은 날짜(11/17): 시신검시 ↔ 신문
+const FINAL_ANS=['victim','scrap'];
+function buildFinal(){
+  if(state.finalChances==null) state.finalChances=3;
+  state.finalPick=state.finalPick||[];
+  // 취조 대화(도입)
+  const dlg=document.getElementById('p6dialog');
+  if(dlg && !dlg.dataset.built){
+    dlg.dataset.built='1';
+    dlg.innerHTML=`
+      <div class="dl narr-d">취조실. 형사는 그가 누구인지 안다. 유현도, 형사가 안다는 걸 안다.</div>
+      <div class="dl det">"왜 죽였는지, 말하지 않을 건가."</div>
+      <div class="dl sus">"…………"</div>
+      <div class="dl det">"좋아. 그럼 내가 말하지. — 이건 우발이 아니었어. 네가 <b>오래, 벼린</b> 거였다."</div>`;
+  }
+  renderFinalChances();
+  const order=['victim','window','desk','pills','autopsy','access','scrap','dispute','keylog','calendar','yj_lead','sy_lead','pen'];
+  const cards=order.filter(id=>state.collected.has(id));
+  document.getElementById('finalOpts').innerHTML=cards.map(id=>`
+    <div class="match-card ${state.finalPick.includes(id)?'sel':''}">
+      <div class="mc-pick" onclick="toggleFinal('${id}')"><span class="rdo"></span><span>${EVIDENCE[id].name}</span></div>
+      <button class="mc-view" onclick="openEvidence('${id}')">보기</button>
+    </div>`).join('');
+  document.getElementById('finalSubmit').disabled = state.finalPick.length<2;
+}
+function renderFinalChances(){
+  const box=document.getElementById('finalChanceBox'); if(!box) return;
+  let d=''; for(let i=0;i<3;i++) d+=`<span class="cdot ${i<state.finalChances?'on':''}"></span>`;
+  box.innerHTML=`<span class="ch-lab">남은 기회</span> ${d}`;
+}
+function toggleFinal(id){
+  const a=state.finalPick; const i=a.indexOf(id);
+  if(i>=0) a.splice(i,1); else { if(a.length>=2) a.shift(); a.push(id); }
+  buildFinal();
+}
+function submitFinal(){
+  const fb=document.getElementById('finalFb');
+  const p=state.finalPick;
+  const ok = p.includes('calendar') && p.includes('victim');
+  if(ok){
+    // 두 날짜를 들이대자, 유현이 처음 입을 연다
+    const dlg=document.getElementById('p6dialog');
+    document.getElementById('finalOpts').style.display='none';
+    document.getElementById('finalSubmit').style.display='none';
+    document.getElementById('p6prompt').style.display='none';
+    fb.style.display='none';
+    dlg.innerHTML+=`
+      <div class="dl det rev">"네가 그를 떨어뜨린 날 — 11월 17일. 네 캘린더에, 아무 말 없이 표시만 해 둔 그 날."</div>
+      <div class="dl det rev">"열두 해 전, 네 아버지가 떨어진 바로 그 날이지."</div>
+      <div class="dl sus open">"……"</div>
+      <div class="dl sus open">"…열두 해 전 오늘이었습니다."</div>
+      <div class="dl sus open">"같은 날, 같은 자리로 — 돌려보냈을 뿐입니다."</div>
+      <button class="btn primary" style="width:100%; margin-top:18px;" onclick="go('p7end')">사건의 전말 →</button>`;
+    dlg.scrollIntoView({behavior:'smooth',block:'end'});
+  } else {
+    state.finalChances--; renderFinalChances();
+    fb.style.display='block'; fb.className='contra-fb no';
+    const hasDate=state.finalPick.filter(x=>['victim','calendar'].includes(x)).length;
+    fb.innerHTML = state.finalChances>0
+      ? (hasDate===1 ? '하나는 닿았다. 그 기록의 <b>날짜</b>가, 또 다른 기록의 날짜와 겹친다. 나머지 한 장을 찾아라.'
+                     : '그것들은 "누가·어떻게"는 말해도, <b>"왜 하필 그날"</b>은 말하지 못한다. — 그가 죽은 날과, 유현이 말없이 표시해 둔 날을 맞대라.')
+      : '한태규가 떨어진 날과, 유현의 캘린더에 표식만 찍힌 11월 17일. 그 둘을 나란히 놓아라.';
+    if(state.finalChances<=0){ state.finalChances=3; renderFinalChances(); }
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+/* ════════════════════ 2부 P7 — 전말 「거울」 ════════════════════ */
+function runEnd(){
+  const box=document.getElementById('endFlow');
+  if(!box) return;
+  box.innerHTML='';
+  const seq=[
+    {t:'tag', x:'유현이, 처음으로 입을 열었다.'},
+    {t:'say', x:'"열두 해 전 오늘, 아버지가 그 자리에서 떨어졌습니다."'},
+    {t:'say', x:'"저는 그를… 같은 날, 같은 자리로 돌려보냈을 뿐입니다."'},
+    {t:'gap'},
+    {t:'p', x:'열두 해 전, 한태규는 수술대에서 사람을 죽였다. 그리고 그것을 덮었다.'},
+    {t:'p', x:'간병인 민경섭은 그 진실을 알았고, 세상에 알리려 했다. 한태규의 과실을, 작은 녹음기에 담아 증거로 모으면서.'},
+    {t:'p', x:'그러나 한태규가 먼저였다. 그는 민경섭을 "관리 소홀의 책임자"로 조작하고 — 별관에서 떨어뜨렸다. 녹음기를 빼앗아, 어둠 속에 묻었다.'},
+    {t:'p', x:'열세 살이던 아들은, 아버지가 사기꾼이 아니었다는 사실 하나를 증명하기 위해 열두 해를 살았다.'},
+    {t:'gap'},
+    {t:'p', x:'성을 지우고, 재단으로 걸어 들어가, 그의 곁에서 가장 믿음직한 사람이 되었다. 그리고 아버지의 기일에 — 아버지가 당한 그대로 돌려주었다.'},
+    {t:'rec'},
+    {t:'gap'},
+    {t:'photo'},
+    {t:'gap'},
+    {t:'end', x:'복수는 끝났다. 그러나 민경섭은 돌아오지 않는다.'},
+    {t:'end', x:'유현은 빼앗겼던 아버지의 목소리를 되찾아, 가해자의 손에 쥐여 주었다. 막은 줄 알았던 그 목소리를, 다시 가져온 것이다.'},
+    {t:'last', x:'— 아버지는 열두 해 전 오늘, 그 자리에서 떨어졌다.'},
+    {t:'title'},
+  ];
+  let delay=300;
+  seq.forEach(item=>{
+    const d=document.createElement('div');
+    if(item.t==='gap'){ d.style.height='22px'; box.appendChild(d); return; }
+    if(item.t==='tag'){ d.className='end-tag'; d.textContent=item.x; }
+    else if(item.t==='say'){ d.className='end-say'; d.textContent=item.x; }
+    else if(item.t==='p'){ d.className='end-p'; d.textContent=item.x; }
+    else if(item.t==='end'){ d.className='end-p strong'; d.textContent=item.x; }
+    else if(item.t==='last'){ d.className='end-last'; d.textContent=item.x; }
+    else if(item.t==='rec'){
+      d.className='rec-box'; d.style.margin='6px 0';
+      d.innerHTML=`<div class="rec-screen" id="endRec">▶ 녹음기 — 마지막 재생</div>`;
+    }
+    else if(item.t==='photo'){
+      d.className='end-photo';
+      d.innerHTML=`<div class="ep-frame">
+        <img src="case3/family.png" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="ep-fallback" style="display:none;">
+          <svg viewBox="0 0 64 64" fill="none"><circle cx="24" cy="26" r="7" fill="#3a4150"/><circle cx="40" cy="29" r="5" fill="#2f3540"/><path d="M12 50 q0 -13 12 -13 t12 13" fill="#3a4150"/><path d="M30 50 q0 -10 10 -10 t10 10" fill="#2f3540"/></svg>
+        </div>
+      </div>
+      <div class="ep-cap">아버지와, 아직 웃을 수 있던 아이.</div>`;
+    }
+    else if(item.t==='title'){
+      d.className='end-title-card';
+      d.innerHTML=`<div class="etc-mark">鏡</div><div class="etc-name">거울</div><div class="etc-sub">사건 #003 · 열두 해 전, 같은 자리</div>
+        <button class="btn primary" style="margin-top:22px;" onclick="go('menu')">처음으로</button>`;
+    }
+    d.style.cssText+=';opacity:0; transform:translateY(10px); transition:opacity 1s, transform 1s;';
+    box.appendChild(d);
+    setTimeout(()=>{ d.style.opacity='1'; d.style.transform='none'; if(item.t==='rec') playEndRec(); }, delay);
+    delay += (item.t==='p'||item.t==='end') ? 2200 : (item.t==='say'?2000:(item.t==='photo'?2600:1500));
+  });
+}
+function playEndRec(){
+  const scr=document.getElementById('endRec'); if(!scr) return;
+  const seq=[
+    '치—…지직……',
+    '"…수술은… 한 원장, 당신 손에서 잘못됐습니다……"',
+    '"…저는 본 대로 말할 뿐입니다……"',
+    '치직—',
+    '"……유현아."',
+    '"…아빠 금방 갈게. 조금만 기다려."',
+  ];
+  let i=0; scr.classList.add('playing');
+  const t=setInterval(()=>{
+    scr.textContent=seq[i]; i++;
+    if(i>=seq.length){ clearInterval(t); scr.classList.remove('playing'); }
+  }, 1700);
+}
+
+/* ════════════════════ 2부 P4 — 맞대보기 (성씨 딸깍) ════════════════════ */
+const MATCH_ANS = ['keylog','scrap'];
+function buildMatch(){
+  if(state.matchChances==null) state.matchChances=3;
+  state.matchPick=state.matchPick||[];
+  renderMatchChances();
+  // 지금까지 모은 증거 전부 (현장+기록+단서)
+  const order=['victim','window','desk','pills','autopsy','access','scrap','dispute','keylog','calendar','yj_lead','sy_lead','pen'];
+  const cards = order.filter(id=>state.collected.has(id));
+  document.getElementById('matchOpts').innerHTML=cards.map(id=>`
+    <div class="match-card ${state.matchPick.includes(id)?'sel':''}">
+      <div class="mc-pick" onclick="toggleMatch('${id}')"><span class="rdo"></span><span>${EVIDENCE[id].name}</span></div>
+      <button class="mc-view" onclick="openEvidence('${id}')">보기</button>
+    </div>`).join('');
+  document.getElementById('matchSubmit').disabled = state.matchPick.length<2;
+}
+function renderMatchChances(){
+  const box=document.getElementById('matchChanceBox'); if(!box) return;
+  let d=''; for(let i=0;i<3;i++) d+=`<span class="cdot ${i<state.matchChances?'on':''}"></span>`;
+  box.innerHTML=`<span class="ch-lab">남은 기회</span> ${d}`;
+}
+function toggleMatch(id){
+  const a=state.matchPick; const i=a.indexOf(id);
+  if(i>=0) a.splice(i,1); else { if(a.length>=2) a.shift(); a.push(id); }
+  buildMatch();
+}
+function submitMatch(){
+  const fb=document.getElementById('matchFb');
+  if([...state.matchPick].sort().join(',')===[...MATCH_ANS].sort().join(',')){
+    go('p4click');
+  } else {
+    state.matchChances--; renderMatchChances();
+    fb.style.display='block'; fb.className='contra-fb no';
+    const hasName = state.matchPick.some(id=>['scrap','keylog'].includes(id));
+    fb.innerHTML = state.matchChances>0
+      ? (hasName? '한 장은 닿았다. 그러나 다른 한 장이 같은 것을 가리키지 않는다. — <b>사람의 이름</b>이 남은 기록을 다시 보라.'
+                : '이 둘은 이어지지 않는다. — 누군가의 <b>이름</b>이 적힌 기록을 찾아 맞대라.')
+      : '12년 전 그 간병인의 성과, 그날 밤 14층에 카드를 찍은 사람의 성을 — 나란히 놓아 보라.';
+    if(state.matchChances<=0){ state.matchChances=3; renderMatchChances(); }
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+function runClick(){
+  const lines=[
+    '신문 한 귀퉁이 — "간병인 <b>민</b>모 씨".',
+    '그리고 그날 밤 14층 카드 단말 — "<b>민</b>유현".',
+    '같은 성이다.',
+    '열두 해 전 떨어져 죽은 간병인. 그가 남긴 열세 살 아들.',
+    '지금, 스물다섯의 — 유현.',
+    '"유현 실장"이라 불리던 그가, 그 아이였다.',
+  ];
+  const box=document.getElementById('clickLines');
+  const btn=document.getElementById('clickBtn');
+  const recBox=document.getElementById('clickRec');
+  const recScr=document.getElementById('clickRecScreen');
+  if(!box) return;
+  box.innerHTML=''; btn.style.opacity='0'; recBox.style.display='none';
+  lines.forEach((ln,i)=>{
+    const p=document.createElement('div');
+    p.innerHTML=ln;
+    p.style.cssText='opacity:0; transform:translateY(8px); transition:opacity .8s, transform .8s;';
+    box.appendChild(p);
+    setTimeout(()=>{ p.style.opacity='1'; p.style.transform='none'; }, 400 + i*1100);
+  });
+  const after = 400 + lines.length*1100 + 400;
+  setTimeout(()=>{
+    recBox.style.display='block';
+    recScr.classList.add('playing');
+    const seq=['치—…지직……','"… <b>민</b> 간병인은……"','"…우리 어머니한테… 친자식처럼……"'];
+    let i=0;
+    const t=setInterval(()=>{ recScr.innerHTML=seq[i]; i++; if(i>=seq.length){ clearInterval(t); recScr.classList.remove('playing'); } }, 1000);
+  }, after);
+  setTimeout(()=>{ btn.style.opacity='1'; }, after + 3600);
+}
+
+/* ════════════════════ 2부 P3 — 과거 재구성 ════════════════════ */
+// archive에서 발굴하는 파편 3 + P2 신문 1 = 4조각. 라벨은 '자료명'만(해석은 플레이어 몫)
+const ARCH = [
+  { id:'a_op',    name:'수술 기록부', sub:'12년 전 · 외과', icon:'ic_op',
+    text:`빛바랜 수술 기록. 집도의란에 <b>한태규</b>. 마취·집도 시간 아래, 한 줄이 눈에 걸린다 — <b>"Exp. 03:47"</b>. 그 옆은 비어 있다.` },
+  { id:'a_chart', name:'환자 차트', sub:'12년 전 · 같은 환자', icon:'ic_chart',
+    text:`같은 환자의 차트. 그런데 중간 몇 줄이 <b>다른 글씨, 다른 잉크</b>로 덧쓰여 있다. 한쪽 귀퉁이엔 <b>수정테이프 자국.</b> 원래 뭐라 적혀 있었는지는 보이지 않는다.` },
+  { id:'a_report',name:'민원 접수부', sub:'12년 전 · 원무과', icon:'ic_report',
+    text:`민원 접수 대장. 한 건의 접수자란에 <b>"간병인 민모"</b>. 내용란은 <b>'비공개 처리'</b>로 덮여 있고, 결재란엔 <b>한태규</b>의 서명이 찍혀 있다.` },
+];
+const FRAGS = [
+  { id:'a_report', label:'민원 접수부 — 간병인이 넣은 민원이 비공개 처리됨' },
+  { id:'a_op',     label:'수술 기록부 — 한태규 집도, 환자 사망' },
+  { id:'scrap_news', label:'신문 — 그 간병인의 추락사' },
+  { id:'a_chart',  label:'환자 차트 — 사후에 고쳐진 흔적' },
+];
+const FRAG_ORDER = ['a_op','a_chart','a_report','scrap_news'];
+function buildPast(){
+  if(state.pastChances==null) state.pastChances=3;
+  if(!state.archFound) state.archFound=new Set();
+  if(!state.slots) state.slots=[null,null,null,null];
+  renderPastChances();
+  const archDone = state.archFound.size>=ARCH.length;
+  document.getElementById('archStage').style.display = archDone? 'none':'block';
+  document.getElementById('orderStage').style.display = (archDone && !state.orderDone)? 'block':'none';
+  document.getElementById('quizStage').style.display = state.orderDone? 'block':'none';
+  if(!archDone) renderArch();
+  else if(!state.orderDone) renderOrder();
+  else renderQuiz();
+}
+function renderArch(){
+  const wrap=document.getElementById('archArt');
+  if(wrap && !wrap.dataset.built){
+    wrap.dataset.built='1';
+    wrap.innerHTML=`
+    <img src="case3/archive.png" alt="" class="scenebg" onerror="this.style.display='none';" onload="this.closest('.scene-wrap').classList.add('has-bg');">
+    <svg viewBox="0 0 480 360">
+      <rect x="0" y="0" width="480" height="360" fill="#0a0d12"/>
+      <g class="scene-prop">
+      <rect x="20" y="40" width="120" height="280" rx="3" fill="#12161d" stroke="#222a35" stroke-width="2"/>
+      <rect x="180" y="40" width="120" height="280" rx="3" fill="#12161d" stroke="#222a35" stroke-width="2"/>
+      <rect x="340" y="40" width="120" height="280" rx="3" fill="#12161d" stroke="#222a35" stroke-width="2"/>
+      ${[70,130,190,250].map(y=>`<line x1="20" y1="${y}" x2="140" y2="${y}" stroke="#222a35" stroke-width="1.5"/><line x1="180" y1="${y}" x2="300" y2="${y}" stroke="#222a35" stroke-width="1.5"/><line x1="340" y1="${y}" x2="460" y2="${y}" stroke="#222a35" stroke-width="1.5"/>`).join('')}
+      <rect x="32" y="46" width="34" height="22" fill="#1b212b"/><rect x="78" y="44" width="28" height="24" fill="#222a34"/>
+      <rect x="196" y="106" width="40" height="22" fill="#1b212b"/><rect x="250" y="104" width="26" height="24" fill="#222a34"/>
+      <rect x="352" y="196" width="36" height="22" fill="#1b212b"/><rect x="400" y="194" width="30" height="24" fill="#222a34"/>
+      </g>
+      ${hotspotSVG('a_op', 96, 56)}
+      ${hotspotSVG('a_chart', 232, 116)}
+      ${hotspotSVG('a_report', 392, 206)}
+    </svg>`;
+    ARCH.forEach(a=>{
+      const hs=wrap.querySelector(`#hs_${a.id}`);
+      if(hs) hs.addEventListener('click',()=>openArch(a.id));
+    });
+  }
+  // 진행 표시
+  ARCH.forEach(a=>{ const g=wrap && wrap.querySelector(`#hs_${a.id}`); if(g) g.classList.toggle('done', state.archFound.has(a.id)); });
+  const c=document.getElementById('archCount');
+  if(c) c.textContent=`${state.archFound.size} / ${ARCH.length}`;
+}
+function openArch(id){
+  const a=ARCH.find(x=>x.id===id);
+  document.getElementById('evModalInner').innerHTML=`
+    <div class="m-ic">${ICON[a.icon]||ICON.person}</div>
+    <h3>${a.name}</h3><div class="m-sub">${a.sub}</div>
+    <div class="m-txt">${a.text}</div>
+    <button class="btn primary close" onclick="closeModal()">닫기</button>`;
+  document.getElementById('evModal').classList.add('show');
+  state.archFound.add(id);
+  if(state.archFound.size>=ARCH.length) setTimeout(()=>{ toast('옛 기록을 모두 들췄다'); buildPast(); }, 300);
+  else renderArch();
+}
+function renderPastChances(){
+  const box=document.getElementById('pastChanceBox'); if(!box) return;
+  let d=''; for(let i=0;i<3;i++) d+=`<span class="cdot ${i<state.pastChances?'on':''}"></span>`;
+  box.innerHTML=`<span class="ch-lab">남은 기회</span> ${d}`;
+}
+function renderOrder(){
+  document.getElementById('slotRow').innerHTML=state.slots.map((sid,i)=>`
+    <div class="slot ${sid?'filled':''}" onclick="clearSlot(${i})">
+      <span class="slot-n">${i+1}</span>
+      <span class="slot-c">${sid?FRAGS.find(f=>f.id===sid).label:'— 비어 있음 —'}</span>
+    </div>`).join('');
+  const used=state.slots.filter(Boolean);
+  const pool=FRAGS.filter(f=>!used.includes(f.id));
+  document.getElementById('fragPool').innerHTML=pool.map(f=>`
+    <div class="frag" onclick="placeFrag('${f.id}')">${f.label}</div>`).join('') || '<div class="frag-empty">모두 배치했다. 비우려면 자리를 누르세요.</div>';
+  document.getElementById('orderSubmit').disabled = used.length<4;
+}
+function placeFrag(id){ const i=state.slots.indexOf(null); if(i<0) return; state.slots[i]=id; renderOrder(); }
+function clearSlot(i){ if(state.slots[i]){ state.slots[i]=null; renderOrder(); } }
+function submitOrder(){
+  const fb=document.getElementById('orderFb');
+  if(state.slots.join(',')===FRAG_ORDER.join(',')){
+    fb.style.display='block'; fb.className='contra-fb ok';
+    fb.innerHTML=`<b>인과가 이어진다.</b> 수술대에서 사람이 죽었고 → 차트가 고쳐졌고 → 그것을 본 간병인이 민원을 넣었고 → 그 간병인이 떨어져 죽었다.`;
+    state.orderDone=true;
+    setTimeout(()=>{ buildPast(); const q=document.getElementById('quizStage'); if(q) q.scrollIntoView({behavior:'smooth'}); }, 1100);
+  } else {
+    state.pastChances--; renderPastChances();
+    fb.style.display='block'; fb.className='contra-fb no';
+    fb.innerHTML = state.pastChances>0
+      ? '앞뒤가 맞지 않는다. <b>차트를 고칠 일이 생기려면 먼저 무엇이 있어야 하나. 민원을 넣으려면 먼저 무엇을 봤어야 하나.</b>'
+      : '죽음이 먼저다 — 차트를 고치는 건 그다음, 그걸 본 사람이 민원을 넣는 건 그다음, 그 사람이 사라지는 건 맨 끝이다.';
+    if(state.pastChances<=0){ state.pastChances=3; renderPastChances(); }
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+const PAST_QUIZ=[
+  { id:'q1', t:'한태규의 수술 과실로 환자가 죽었고, 간병인은 의료 분쟁에 휘말려 스스로 목숨을 끊었다.' },
+  { id:'q2', t:'한태규가 수술 과실을 은폐했고, 그것을 목격한 간병인을 사고 책임자로 조작해 입을 막았다.' },
+  { id:'q3', t:'간병인이 의료사고를 냈고, 한태규가 책임을 덮어주려다 일이 커졌다.' },
+  { id:'q4', t:'한태규와 간병인이 사고를 함께 은폐하려다 내분이 벌어졌다.' },
+];
+function renderQuiz(){
+  document.getElementById('pastQuiz').innerHTML=PAST_QUIZ.map(q=>`
+    <div class="opt ${state.quizPick===q.id?'sel':''}" onclick="pickQuiz('${q.id}')">
+      <span class="rdo"></span><span>${q.t}</span>
+    </div>`).join('')+`
+    <button class="btn primary" id="quizSubmit" ${state.quizPick?'':'disabled'} onclick="submitQuiz()" style="width:100%; margin-top:12px;">확정</button>`;
+}
+function pickQuiz(id){ state.quizPick=id; renderQuiz(); }
+function submitQuiz(){
+  const fb=document.getElementById('quizFb');
+  if(state.quizPick==='q2'){
+    fb.style.display='block'; fb.className='contra-fb ok';
+    fb.innerHTML=`<b>그것이 12년 전의 진실이다.</b> 한태규는 사람을 죽이고 덮었다. 그리고 그 진실을 본 간병인을 — <b>추락사로 위장해 입을 막았다.</b><br><br>…지금, 한태규가 죽은 바로 그 방식으로.`;
+    state.pastDone=true;
+    document.getElementById('p3next').disabled=false;
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
+  } else {
+    state.pastChances--; renderPastChances();
+    const hint={
+      q1:'병원 공식 발표를 그대로 믿는가. 차트를 고친 손은 누구였나.',
+      q3:'가해와 피해가 뒤집혔다. 민원을 넣은 쪽은, 사고를 낸 쪽이 아니다.',
+      q4:'공모가 아니다. 한쪽은 덮으려 했고, 한쪽은 드러내려다 죽었다.',
+    }[state.quizPick]||'';
+    fb.style.display='block'; fb.className='contra-fb no';
+    fb.innerHTML=`${hint} <span style="color:var(--muted)">남은 기회 ${Math.max(state.pastChances,0)}.</span>`;
+    if(state.pastChances<=0){ state.pastChances=3; renderPastChances(); }
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+/* ════════════════════ 2부 P1 — 녹음기 ════════════════════ */
+function flipScrap(el){
+  if(el.classList.contains('opened')) return;
+  el.classList.add('opened');
+  if(el.dataset.reveal==='1'){
+    el.classList.remove('faded');
+    el.innerHTML=`<div class="news-clip">
+      <div class="news-h">○○병원 간병인 민모 씨, 별관서 추락사</div>
+      <div class="news-b">병원 측은 "환자 관리 소홀에 대한 책임을 비관한 것으로 보인다"고 발표했고, 경찰은 사고로 종결했다.</div>
+      <div class="news-date">— 12년 전 · <b>11월 17일</b></div>
+    </div>`;
+    const found=document.getElementById('scrapFound');
+    found.style.display='block'; found.className='contra-fb no';
+    found.innerHTML=`녹음기의 '간병인'이 여기 있었다. <b>12년 전, 이 병원에서 간병인 하나가 떨어져 죽었다.</b> 한태규는 제 미담들 사이에, 왜 이 사고 기사 한 장만 숨겨 두었나. — 그가 자선가가 되기 전, 이 병원의 무엇이었는지부터 캐야 한다.`;
+    found.scrollIntoView({behavior:'smooth',block:'center'});
+    state.scrapFound=true;
+    document.getElementById('p2scrapNext').disabled=false;
+  } else {
+    el.style.opacity='.45';
+  }
+}
+function playRec(){
+  const scr=document.getElementById('recScreen');
+  const btn=document.getElementById('recBtn');
+  const memo=document.getElementById('recMemo');
+  btn.disabled=true; btn.textContent='재생 중…';
+  const frames=[
+    '치—…지직……',
+    '…ㅡ… 지지직 …ㅡ…',
+    '"…ㅁ…… 간병…인…은……"',
+    '치직— "…그 사람한테…… 책임을……"',
+    '……(테이프 손상으로 끊김)……',
+  ];
+  let i=0;
+  scr.classList.add('playing');
+  const t=setInterval(()=>{
+    scr.textContent=frames[i]; i++;
+    if(i>=frames.length){
+      clearInterval(t);
+      scr.classList.remove('playing');
+      btn.disabled=false; btn.textContent='▶ 다시 재생';
+      memo.style.display='block'; memo.className='contra-fb no';
+      memo.innerHTML=`들리는 건 <b>"간병인"</b>이라는 한 마디뿐. 누구의 목소리인지, 언제 녹음됐는지 알 수 없다. — 자살한 사람이, 왜 이런 낡은 녹음기를 손에 쥐고 있었나.`;
+      state.recPlayed=true;
+      document.getElementById('p2recNext').disabled=false;
+    }
+  }, 900);
+}
+
+/* ════════════════════ MONO2 2부 전환 독백 ════════════════════ */
+function runMono2(){
+  const lines=[
+    "끝났다. 범인은 밝혀졌고, 사건은 닫혔다.",
+    "그런데 — 왜, 손이 떨릴까.",
+    "유현. 그는 동기가 없었다.",
+    "원한도, 이득도, 아무것도.",
+    "오히려 가장 가까이서, 가장 살뜰히 그를 챙기던 사람이었다.",
+    "…사람이, 아무 이유도 없이",
+    "이토록 정교하게 사람을 죽이진 않는다.",
+    "무언가, 처음부터 — 놓치고 있었다.",
+  ];
+  const box=document.getElementById('mono2Lines');
+  const btn=document.getElementById('mono2Btn');
+  box.innerHTML=''; btn.style.opacity='0';
+  lines.forEach((ln,i)=>{
+    const p=document.createElement('div');
+    p.textContent=ln;
+    p.style.cssText='opacity:0; transform:translateY(8px); transition:opacity .8s, transform .8s;';
+    box.appendChild(p);
+    setTimeout(()=>{ p.style.opacity='1'; p.style.transform='none'; }, 400 + i*1000);
+  });
+  setTimeout(()=>{ btn.style.opacity='1'; }, 600 + lines.length*1000);
+}
+
+
+/* ════════════════════ 초기화 ════════════════════ */
+buildScene();
+buildRec();
+buildInterro();
+buildRe();
+</script>
+</body>
+</html>
