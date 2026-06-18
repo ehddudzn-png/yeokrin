@@ -672,18 +672,18 @@
   <!-- ════════════════ SCOPE 내부자 확정(킥) ════════════════ -->
   <section class="screen" id="scope">
     <header>
-      <div class="case-tag">추론 · 누구의 손인가</div>
-      <div class="case-title">밖인가, 안인가</div>
-      <div class="scene-sub">살해당했다. 그렇다면 — 밖에서 든 자인가, 사옥 안의 누군가인가.</div>
+      <div class="case-tag">추론 · 그 저녁, 곁에 있던 자</div>
+      <div class="case-title">연차라던 사람</div>
+      <div class="scene-sub">살해당했다. 그렇다면, 그 마지막 저녁 한태규 곁에 있었던 건 누구인가.</div>
     </header>
     <div class="body">
-      <p class="narr">외부 침입이 아니라 <em>안의 사람</em>임을 증명하는 단서 하나를 짚어라.</p>
+      <p class="narr">그날 저녁, 누군가는 분명 한태규 곁에 있었다. <em>그 사실을 증명하는 두 단서</em>를 골라 맞대라. <span style="color:var(--muted)">(보기로 내용 확인, 두 장 선택)</span></p>
       <div class="opts" id="scopeOpts"></div>
-      <div id="scopeFb" class="contra-fb"></div>
+      <div id="scopeFb" class="contra-fb" style="display:none;"></div>
     </div>
     <div class="actions">
       <button class="btn ghost" onclick="go('kill')">← 타살 확정</button>
-      <button class="btn primary" id="scopeSubmit" disabled onclick="submitScope()">제출</button>
+      <button class="btn primary" id="scopeSubmit" disabled onclick="submitScope()">맞대본다</button>
     </div>
   </section>
 
@@ -977,9 +977,12 @@ const EVIDENCE = {
   dispute:{ icon:'debt', name:'재단 부지 분쟁 기록', sub:'Record · 법무팀',
     text:`윤성그룹 <b>서영록 부회장</b>과 재단 사이에 <b>부지 매입가를 둘러싼 거액 소송</b>이 진행 중이었다. 최근 한태규와 직접 통화로 심하게 다퉜다는 메모도 있다.`,
     obs:`서영록 부회장은 재단 부지값으로 한태규와 거액 분쟁 중이었다 — 또렷한 갈등.` },
-  calendar:{ icon:'will', name:'유현의 탁상 캘린더', sub:'Record · 기획조정실',
-    text:`유현의 책상에 놓인 11월 탁상 캘린더. 업무 일정이 빼곡한데, <b>17일</b>에만 아무 일정 없이 동그라미 하나가 쳐져 있다.`,
-    obs:`유현의 캘린더에는, 일정 하나 없이 11월 17일에만 동그라미가 쳐져 있다.` },
+  dose:{ icon:'forensic', name:'이사장 복용 일지', sub:'Record · 비서팀',
+    text:`한태규의 혈압약은 매일 저녁, 비서가 직접 챙겨 전달하고 일지에 표시했다. <b>11월 17일 저녁 칸에도 '전달 완료' 표시</b>가 되어 있다. 담당란의 서명은 늘 같은 사람의 것이다.`,
+    obs:`11월 17일 저녁에도 누군가 한태규에게 혈압약을 직접 챙겨 전달했다 — 늘 같은 담당자가.` },
+  calendar:{ icon:'will', name:'기획조정실장 탁상 캘린더', sub:'Record · 기획조정실',
+    text:`기획조정실장 책상에 놓인 11월 탁상 캘린더. 업무 일정이 빼곡한데, <b>17일</b>에만 아무 일정 없이 동그라미 하나가 쳐져 있다.`,
+    obs:`기획조정실장의 캘린더에는, 일정 하나 없이 11월 17일에만 동그라미가 쳐져 있다.` },
   yj_lead:{ icon:'affair', name:'비서실장 관련 메모', sub:'Record · 탐문',
     text:`윤지선은 그날 밤 <b>늦게까지 사옥에 남아 결재 서류를 처리</b>했다. 며칠 전 한태규와 언성을 높이는 걸 봤다는 직원의 진술도 있다.`,
     obs:`윤지선은 그날 밤 사옥에 늦게까지 있었고, 한태규와 다툰 적이 있다는 정황이 있다.` },
@@ -988,7 +991,7 @@ const EVIDENCE = {
     obs:`서영록은 부지 문제로 한태규와 갈등했지만, 그날 저녁은 행사장에 있었던 정황이다.` },
 };
 const SCENE_EV = ['victim','window','desk','pills'];
-const REC_EV   = ['autopsy','access','scrap','dispute','keylog','calendar','yj_lead','sy_lead'];
+const REC_EV   = ['autopsy','access','scrap','dispute','keylog','dose','calendar','yj_lead','sy_lead'];
 
 /* ── 용의자 / 진술(1차 stage0 + 균열 stage1) ── */
 const SUS = [
@@ -1467,9 +1470,12 @@ function submitKill(){
   const ok2=[...state.killPick2].sort().join(',')===[...KILL_P2].sort().join(',');
   const fb=document.getElementById('killFb');
   if(ok1&&ok2){
+    document.getElementById('killOpts1').style.display='none';
+    document.getElementById('killOpts2').style.display='none';
+    document.getElementById('killSubmit').style.display='none';
     fb.className='contra-fb ok';
-    fb.innerHTML=`<b>두 모순이 한 곳을 가리킨다.</b> 손글씨만 쓰던 사람의 타이핑 유서 — 누군가 대신 썼다. 혈압약을 꼬박 챙기던 사람이 그날도 약을 먹었다 — 죽을 생각이 없었다. <b>한태규는 살해당했다.</b>`;
-    setTimeout(()=>go('scope'), 1100);
+    fb.innerHTML=`<b>두 모순이 한 곳을 가리킨다.</b><br><br>손글씨만 쓰던 사람의 타이핑 유서 — 누군가 대신 썼다. 혈압약을 꼬박 챙기던 사람이 그날도 약을 먹었다 — 죽을 생각이 없었다.<br><br><b>한태규는 살해당했다.</b><br><br><button class="btn primary" style="width:100%; margin-top:16px;" onclick="go('scope')">그렇다면, 누구의 손인가 →</button>`;
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
   } else {
     fb.className='contra-fb no';
     let hint = !ok1 && !ok2 ? '두 쌍 모두 아직 어긋난다.'
@@ -1481,24 +1487,48 @@ function submitKill(){
 }
 
 /* ════════════════════ SCOPE 내부자 확정 (킥) ════════════════════ */
+const SCOPE_OPTS = [
+  { id:'dose',    label:'이사장 복용 일지' },
+  { id:'dg_care', label:'유현 실장 진술 — "약은 늘 제가 챙겨드렸다"' },
+  { id:'window',  label:'열린 통창' },
+  { id:'autopsy', label:'부검·건강 기록' },
+  { id:'access',  label:'출입 기록' },
+  { id:'dg_night',label:'유현 실장 진술 — "그날은 연차였다"' },
+];
+const SCOPE_ANS = ['dose','dg_care'];
 function buildScope(){
-  const ev=[...state.collected];
-  document.getElementById('scopeOpts').innerHTML=ev.map(id=>`
-    <div class="opt ${state.scopePick===id?'sel':''}" onclick="pickScope('${id}')">
-      <span class="rdo"></span><span>${EVIDENCE[id].name}</span>
-    </div>`).join('');
-  document.getElementById('scopeSubmit').disabled=!state.scopePick;
+  if(state.scopeChances==null) state.scopeChances=3;
+  state.scopePick=Array.isArray(state.scopePick)?state.scopePick:[];
+  document.getElementById('scopeOpts').innerHTML=SCOPE_OPTS.map(o=>{
+    const ev=EVIDENCE[o.id];
+    const view = ev?`<button class="mc-view" onclick="event.stopPropagation(); openEvidence('${o.id}')">보기</button>`:'';
+    return `<div class="match-card ${state.scopePick.includes(o.id)?'sel':''}">
+      <div class="mc-pick" onclick="pickScope('${o.id}')"><span class="rdo"></span><span>${o.label}</span></div>
+      ${view}
+    </div>`;
+  }).join('');
+  document.getElementById('scopeSubmit').disabled = state.scopePick.length<2;
 }
-function pickScope(id){ state.scopePick=id; buildScope(); }
+function pickScope(id){
+  const a=state.scopePick; const i=a.indexOf(id);
+  if(i>=0) a.splice(i,1); else { if(a.length>=2) a.shift(); a.push(id); }
+  buildScope();
+}
 function submitScope(){
   const fb=document.getElementById('scopeFb');
-  if(state.scopePick==='window'){
-    fb.className='contra-fb ok';
-    fb.innerHTML=`<b>안의 사람이다.</b> 통창은 안에서만 열리는 구조인데, 손잡이엔 한태규의 지문조차 없다 — 누군가 닦아낸 것이다. 밖에서 든 자가 아니라, <b>사옥 안의 누군가</b>가 그를 떨어뜨렸다.`;
-    setTimeout(()=>go('accuse'), 1100);
+  if([...state.scopePick].sort().join(',')===[...SCOPE_ANS].sort().join(',')){
+    document.getElementById('scopeOpts').style.display='none';
+    document.getElementById('scopeSubmit').style.display='none';
+    fb.style.display='block'; fb.className='contra-fb ok';
+    fb.innerHTML=`<b>그는 그날 저녁, 거기 있었다.</b><br><br>한태규의 혈압약은 늘 곁의 사람이 직접 챙겼고 — 본인 말로도 "늘 제가 챙겨드렸다"고 했다. 그리고 <b>11월 17일 저녁에도 약은 전달됐다.</b><br><br>그런데 그는 "그날은 연차라 회사에 없었다"고 했다. — <b>거짓이다.</b> 약을 챙긴 사람은, 그 저녁 한태규 곁에 있었다.<br><br><button class="btn primary" style="width:100%; margin-top:16px;" onclick="go('accuse')">그렇다면, 누구인가 →</button>`;
+    fb.scrollIntoView({behavior:'smooth',block:'center'});
   } else {
-    fb.className='contra-fb no';
-    fb.innerHTML=`그건 '안의 사람'을 가리키지 못한다. 외부의 침입이라면 남았을 흔적, 혹은 남지 않았어야 할 흔적을 떠올려라. <span style="color:var(--muted)">다시 골라라.</span>`;
+    state.scopeChances--;
+    fb.style.display='block'; fb.className='contra-fb no';
+    fb.innerHTML = state.scopeChances>0
+      ? `그 둘로는 "그날 저녁 곁에 있던 사람"이 드러나지 않는다. — 매일 챙기던 <b>약</b>이, 그날 저녁에도 전달됐다는 데 주목하라. <span style="color:var(--muted)">남은 기회 ${state.scopeChances}.</span>`
+      : `그날 저녁에도 한태규의 약은 전달됐다(복용 일지). 그 약을 늘 챙긴 게 누구였는지(그의 진술) — 둘을 맞대라.`;
+    if(state.scopeChances<=0) state.scopeChances=3;
     fb.scrollIntoView({behavior:'smooth',block:'center'});
   }
 }
